@@ -7,6 +7,10 @@ type TerritoryWithWinners = Territory & { winners: Winner[] }
 type Props = {
   territory: TerritoryWithWinners
   onClose: () => void
+  targetX: number  // posisi tengah territory di layar
+  targetY: number
+  popupX: number   // posisi popup (tengah layar)
+  popupY: number
 }
 
 const RANK_BADGES: Record<number, { label: string; color: string }> = {
@@ -15,299 +19,256 @@ const RANK_BADGES: Record<number, { label: string; color: string }> = {
   3: { label: '3RD', color: '#CD7F32' },
 }
 
-export default function TerritoryPopup({ territory, onClose }: Props) {
+export default function TerritoryPopup({ territory, onClose, targetX, targetY, popupX, popupY }: Props) {
   const sortedWinners = [...territory.winners].sort((a, b) => a.rank - b.rank)
 
+// ===== SESUAIKAN INI =====
+const OFFSET_FROM_X = -224   // geser pangkal garis horizontal (= lebar popup)
+const OFFSET_FROM_Y = -154     // geser pangkal garis vertikal dari tengah popup
+const OFFSET_TARGET_X = -500   // geser ujung garis horizontal dari tengah territory
+const OFFSET_TARGET_Y = -150   // geser ujung garis vertikal dari tengah territory
+// =========================
+
+const fromX = popupX + OFFSET_FROM_X
+const fromY = popupY + OFFSET_FROM_Y
+const targetFinalX = targetX + OFFSET_TARGET_X
+const targetFinalY = targetY + OFFSET_TARGET_Y
+
+const dx = targetFinalX - fromX
+const dy = targetFinalY - fromY
+const angle = Math.atan2(dy, dx) * (180 / Math.PI)
+const length = Math.sqrt(dx * dx + dy * dy)
+
   return (
-    <div className="relative group">
-      {/* Animasi CSS */}
+    <>
       <style>{`
-        @keyframes blink {
-          0%, 100% {
-            opacity: 1;
-            text-shadow: 0 0 2px ${territory.color}, 0 0 5px ${territory.color};
-          }
-          49% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.2;
-            text-shadow: none;
-          }
-          51% {
-            opacity: 1;
-            text-shadow: 0 0 2px ${territory.color}, 0 0 5px ${territory.color};
-          }
-        }
-        @keyframes pulse-dot {
-          0%, 100% {
-            opacity: 1;
-            transform: translateY(-50%) scale(1);
-          }
-          50% {
-            opacity: 0.5;
-            transform: translateY(-50%) scale(1.2);
-          }
-        }
+@keyframes gold-blink {
+  0%, 49% { opacity: 1; text-shadow: 0 0 6px #FFD700, 0 0 12px #FFD70088; }
+  50%, 99% { opacity: 0; text-shadow: none; }
+  100% { opacity: 1; }
+}
       `}</style>
 
-      {/* ========== KONEKTOR GARIS KE TERRITORY ========== */}
-      <div style={{
-        position: 'absolute',
-        left: '-25px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '25px',
-        height: '1px',
-        background: territory.color,
-        boxShadow: `0 0 3px ${territory.color}`,
-      }} />
-      
-      {/* Bulat di ujung garis */}
-      <div style={{
-        position: 'absolute',
-        left: '-30px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '5px',
-        height: '5px',
-        borderRadius: '50%',
-        background: territory.color,
-        boxShadow: `0 0 8px ${territory.color}`,
-        animation: 'pulse-dot 1.5s ease-in-out infinite',
-      }} />
+     {/* GARIS */}
+<div style={{
+  position: 'fixed',
+  left: fromX,
+  top: fromY,
+  width: `${length}px`,
+  height: '1px',
+  background: '#ffffff',
+  transformOrigin: '0 50%',
+  transform: `rotate(${angle}deg)`,
+  pointerEvents: 'none',
+  zIndex: 90,
+  opacity: 0.85,
+}} />
 
-      {/* ========== POPUP - TANPA OUTLINE/BORDER LUAR ========== */}
+{/* Dot di territory (ujung) */}
+<div style={{
+  position: 'fixed',
+left: targetFinalX - 4,
+top: targetFinalY - 4,
+  width: '8px',
+  height: '8px',
+  borderRadius: '50%',
+  background: '#ffffff',
+  boxShadow: '0 0 6px #ffffff, 0 0 12px #ffffff88',
+  pointerEvents: 'none',
+  zIndex: 90,
+}} />
+
+{/* Dot di pangkal (pojok popup) */}
+<div style={{
+  position: 'fixed',
+left: fromX - 3,
+top: fromY - 3,
+  width: '6px',
+  height: '6px',
+  borderRadius: '50%',
+  background: '#ffffff',
+  pointerEvents: 'none',
+  zIndex: 90,
+}} />
+
+      {/* ===== POPUP CARD ===== */}
       <div style={{
-        background: 'rgba(8, 8, 12, 0.5)',
-        backdropFilter: 'blur(6px)',
-        borderRadius: '4px',
-        minWidth: '320px',
-        maxWidth: '380px',
+background: 'transparent',
+        minWidth: '250px',
+        maxWidth: '250px',
         position: 'relative',
-        border: 'none', // ← HILANGKAN OUTLINE
+        fontFamily: "'Share Tech Mono', monospace",
       }}>
-        
-        {/* ========== HEADER ========== */}
+
+        {/* Header */}
         <div style={{
-          padding: '12px 16px',
-          borderBottom: `1px solid ${territory.color}25`,
+          padding: '12px 16px 10px',
+          borderBottom: '1px solid rgba(255,255,255,0.5)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              {/* JUDUL KELAP-KELIP */}
-              <h3 style={{
-                fontFamily: "'Orbitron', sans-serif",
-                fontSize: '0.85rem',
-                fontWeight: 700,
+          <div>
+            <div style={{
+              fontSize: '0.6rem',
+              color: 'rgba(255,255,255,0.)',
+              letterSpacing: '0.3em',
+              marginBottom: '4px',
+            }}>TERRITORY</div>
+            <div style={{
+              fontFamily: "'Orbitron', sans-serif",
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: '#ffffff',
+              letterSpacing: '0.12em',
+              textShadow: `0 0 10px ${territory.color}88`,
+            }}>
+              {territory.name.toUpperCase()}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{
+                width: '5px', height: '5px', borderRadius: '50%',
+                background: territory.is_active ? '#00ff88' : '#ffffff44',
+                boxShadow: territory.is_active ? '0 0 6px #00ff88' : 'none',
+                display: 'inline-block',
+              }} />
+              <span style={{
+                fontSize: '0.55rem',
+                color: territory.is_active ? '#00ff88' : 'rgba(255,255,255,0.3)',
                 letterSpacing: '0.15em',
-                color: territory.color,
-                animation: 'blink 1s step-end infinite',
               }}>
-                {territory.name.toUpperCase()}
-              </h3>
-              
-              {/* Status badge */}
+                {territory.is_active ? 'ACTIVE' : 'INACTIVE'}
+              </span>
+            </div>
+            <button onClick={onClose} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'rgba(255,255,255,0.35)', fontSize: '13px',
+              fontFamily: 'monospace', padding: '2px 4px',
+              transition: 'color 0.2s',
+            }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+            >✕</button>
+          </div>
+        </div>
+
+        {/* Tabel header */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '48px 1fr 1fr 52px',
+          borderBottom: '1px solid rgba(255,255,255,0.5)',
+        }}>
+          {['#', 'DRIVER', 'CAR', 'PTS'].map((h, i, arr) => (
+            <div key={h} style={{
+              padding: '7px 10px',
+              borderRight: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.5)' : 'none',
+              fontSize: '0.52rem',
+              color: 'rgba(255,255,255,0.8)',
+              letterSpacing: '0.15em',
+              textAlign: 'center',  // semua center
+            }}>{h}</div>
+          ))}
+        </div>
+
+        {/* Tabel body */}
+        {sortedWinners.length === 0 ? (
+          <div style={{
+            padding: '28px 16px',
+            textAlign: 'center',
+            fontSize: '0.62rem',
+            color: 'rgba(255,255,255,0.2)',
+            letterSpacing: '0.2em',
+          }}>— NO DATA —</div>
+        ) : (
+          sortedWinners.map((winner, idx) => (
+            <div key={winner.id} style={{
+              display: 'grid',
+              gridTemplateColumns: '48px 1fr 1fr 52px',
+              borderBottom: idx < sortedWinners.length - 1
+                ? '1px solid rgba(255,255,255,0.5)' : 'none',
+            }}>
+              {/* Rank */}
               <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                marginTop: '5px',
+                padding: '9px 10px',
+                borderRight: '1px solid rgba(255,255,255,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap',
               }}>
                 <span style={{
-                  width: '5px',
-                  height: '5px',
-                  borderRadius: '50%',
-                  background: territory.is_active ? '#00ff88' : 'rgba(255,255,255,0.4)',
-                  boxShadow: territory.is_active ? '0 0 5px #00ff88' : 'none',
-                }} />
-                <span style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: '0.55rem',
-                  color: territory.is_active ? '#00ff88' : 'rgba(255,255,255,0.5)',
-                  letterSpacing: '0.1em',
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontSize: '0.62rem',
+                  fontWeight: 'bold',
+                  color: RANK_BADGES[winner.rank].color,
+                  // Gold rank 1 kelap-kelip!
+                  animation: winner.rank === 1 ? 'gold-blink 1.2s ease-in-out infinite' : 'none',
                 }}>
-                  {territory.is_active ? 'ACTIVE' : 'INACTIVE'}
+                  {RANK_BADGES[winner.rank].label}
                 </span>
               </div>
-            </div>
-            
-            <button
-              onClick={onClose}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'rgba(255,255,255,0.5)',
-                fontFamily: 'monospace',
-                fontSize: '14px',
-                padding: '4px 6px',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = territory.color}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
 
-        {/* ========== TABEL DENGAN GARIS BARIS DAN KOLOM ========== */}
-        <div>
-          {/* Header tabel - dengan border kanan */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '45px 1fr 1fr 45px',
-            borderBottom: `1px solid ${territory.color}25`,
-          }}>
-            <div style={{
-              padding: '8px 12px',
-              borderRight: `1px solid ${territory.color}15`,
-            }}>
-              <span style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.55rem',
-                fontWeight: 'bold',
-                color: 'rgba(255,255,255,0.6)',
-                letterSpacing: '0.05em',
-              }}>#</span>
-            </div>
-            <div style={{
-              padding: '8px 12px',
-              borderRight: `1px solid ${territory.color}15`,
-            }}>
-              <span style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.55rem',
-                fontWeight: 'bold',
-                color: 'rgba(255,255,255,0.6)',
-                letterSpacing: '0.05em',
-              }}>NAME</span>
-            </div>
-            <div style={{
-              padding: '8px 12px',
-              borderRight: `1px solid ${territory.color}15`,
-            }}>
-              <span style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.55rem',
-                fontWeight: 'bold',
-                color: 'rgba(255,255,255,0.6)',
-                letterSpacing: '0.05em',
-              }}>CAR</span>
-            </div>
-            <div style={{
-              padding: '8px 12px',
-              textAlign: 'right',
-            }}>
-              <span style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.55rem',
-                fontWeight: 'bold',
-                color: 'rgba(255,255,255,0.6)',
-                letterSpacing: '0.05em',
-              }}>PTS</span>
-            </div>
-          </div>
-
-          {/* Body tabel - dengan garis baris DAN kolom */}
-          <div>
-            {sortedWinners.length === 0 ? (
+              {/* Driver */}
               <div style={{
-                padding: '32px 16px',
-                textAlign: 'center',
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: '0.65rem',
-                color: 'rgba(255,255,255,0.25)',
+                padding: '9px 10px',
+                borderRight: '1px solid rgba(255,255,255,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap',
               }}>
-                — NO DATA —
+<span style={{
+  fontSize: '0.68rem',
+  color: '#ffffff',
+  wordBreak: 'break-word',
+  textAlign: 'center',
+  width: '100%',
+}}>{winner.driver_name}</span>
               </div>
-            ) : (
-              sortedWinners.map((winner, idx) => (
-                <div
-                  key={winner.id}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '45px 1fr 1fr 45px',
-                    borderBottom: idx < sortedWinners.length - 1 ? `1px solid ${territory.color}15` : 'none',
-                  }}
-                >
-                  {/* Kolom # */}
-                  <div style={{
-                    padding: '8px 12px',
-                    borderRight: `1px solid ${territory.color}15`,
-                  }}>
-                    <span style={{
-                      fontFamily: "'Orbitron', sans-serif",
-                      fontSize: '0.65rem',
-                      fontWeight: 'bold',
-                      color: RANK_BADGES[winner.rank].color,
-                    }}>
-                      {RANK_BADGES[winner.rank].label}
-                    </span>
-                  </div>
-                  
-                  {/* Kolom NAME */}
-                  <div style={{
-                    padding: '8px 12px',
-                    borderRight: `1px solid ${territory.color}15`,
-                  }}>
-                    <span style={{
-                      fontFamily: "'Share Tech Mono', monospace",
-                      fontSize: '0.7rem',
-                      color: '#ffffffcc',
-                    }}>
-                      {winner.driver_name}
-                    </span>
-                  </div>
-                  
-                  {/* Kolom CAR */}
-                  <div style={{
-                    padding: '8px 12px',
-                    borderRight: `1px solid ${territory.color}15`,
-                  }}>
-                    <span style={{
-                      fontFamily: "'Share Tech Mono', monospace",
-                      fontSize: '0.6rem',
-                      color: 'rgba(255,255,255,0.5)',
-                    }}>
-                      {winner.car_name}
-                    </span>
-                  </div>
-                  
-                  {/* Kolom PTS */}
-                  <div style={{
-                    padding: '8px 12px',
-                    textAlign: 'right',
-                  }}>
-                    <span style={{
-                      fontFamily: "'Orbitron', sans-serif",
-                      fontSize: '0.65rem',
-                      fontWeight: 'bold',
-                      color: territory.color,
-                    }}>
-                      {winner.points}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
 
-        {/* ========== FOOTER ========== */}
+              {/* Car */}
+              <div style={{
+                padding: '9px 10px',
+                borderRight: '1px solid rgba(255,255,255,0.5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap',
+              }}>
+<span style={{
+  fontSize: '0.6rem',
+  color: '#ffffff',
+  wordBreak: 'break-word',
+  textAlign: 'center',
+  width: '100%',
+}}>{winner.car_name}</span>
+              </div>
+
+              {/* Points - gold blink untuk rank 1 */}
+              <div style={{
+                padding: '9px 10px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap',
+              }}>
+                <span style={{
+                  fontFamily: "'Orbitron', sans-serif",
+                  fontSize: '0.65rem',
+                  fontWeight: 'bold',
+                  color: winner.rank === 1 ? '#FFD700' : 'rgba(255,255,255,0.7)',
+                  animation: winner.rank === 1 ? 'gold-blink 1.2s ease-in-out infinite' : 'none',
+                }}>{winner.points}</span>
+              </div>
+            </div>
+          ))
+        )}
+
+        {/* Footer */}
         <div style={{
-          padding: '8px 16px',
-          borderTop: `1px solid ${territory.color}20`,
+          padding: '7px 12px',
+          borderTop: '1px solid rgba(255,255,255,0.5)',
+          display: 'flex',
+          justifyContent: 'space-between',
           fontSize: '0.5rem',
-          fontFamily: "'Share Tech Mono', monospace",
-          color: 'rgba(255,255,255,0.25)',
-          textAlign: 'right',
-          letterSpacing: '0.05em',
+          color: 'rgba(255,255,255,0.2)',
+          letterSpacing: '0.1em',
         }}>
-          WINNERS: {sortedWinners.length}/3
+          <span>PROJECT.D</span>
+          <span>WINNERS {sortedWinners.length}/3</span>
         </div>
       </div>
-    </div>
+    </>
   )
 }

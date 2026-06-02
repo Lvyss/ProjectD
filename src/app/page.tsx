@@ -10,7 +10,10 @@ type TerritoryWithWinners = Territory & { winners: Winner[] }
 export default function Home() {
   const [territories, setTerritories] = useState<TerritoryWithWinners[]>([])
   const [selected, setSelected] = useState<TerritoryWithWinners | null>(null)
-  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 })
+  const [popupPos, setPopupPos] = useState({ 
+  popupX: 0, popupY: 0,   // posisi popup card (tengah layar)
+  targetX: 0, targetY: 0  // posisi tengah territory yang diklik
+})
   const mapRef = useRef<HTMLDivElement>(null)
 
   const fetchTerritories = async () => {
@@ -36,18 +39,39 @@ export default function Home() {
     }
   }, [territories, selected])
 
-  const handleSelectTerritory = (
-    territory: TerritoryWithWinners | null,
-    event?: React.MouseEvent
-  ) => {
-    setSelected(territory)
-    if (territory && event && mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect()
-      const x = Math.min(event.clientX - rect.left + 20, rect.width - 320)
-      const y = Math.min(event.clientY - rect.top - 30, rect.height - 300)
-      setPopupPos({ x: Math.max(10, x), y: Math.max(10, y) })
-    }
+const TERRITORY_CENTERS: Record<string, { cx: string; cy: string }> = {
+  'las-venturas':  { cx: '69%', cy: '20%' },
+  'bone':          { cx: '50%', cy: '21%' },
+  'tierra-robada': { cx: '32%', cy: '12%' },
+  'san-fierro':    { cx: '26%', cy: '46%' },
+  'red-county':    { cx: '66%', cy: '50%' },
+  'whetstone':     { cx: '26%', cy: '82%' },
+  'flint':         { cx: '41%', cy: '75%' },
+  'los-santos':    { cx: '67%', cy: '75%' },
+}
+
+const handleSelectTerritory = (
+  territory: TerritoryWithWinners | null,
+  event?: React.MouseEvent
+) => {
+  setSelected(territory)
+  if (territory && mapRef.current) {
+    const rect = mapRef.current.getBoundingClientRect()
+
+    const center = TERRITORY_CENTERS[territory.slug]
+    if (!center) return
+
+    // Hitung posisi tengah territory dalam px absolut layar
+    const targetX = rect.left + (parseFloat(center.cx) / 100) * rect.width
+    const targetY = rect.top  + (parseFloat(center.cy) / 100) * rect.height
+
+    // Popup fixed di tengah vertikal, di area tengah layar
+    const popupX = rect.left - 165
+    const popupY = window.innerHeight / 2 - 50
+
+    setPopupPos({ popupX, popupY, targetX, targetY })
   }
+}
 
   return (
     <div style={{
@@ -140,9 +164,9 @@ export default function Home() {
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-  paddingLeft: '15%',
-  paddingRight: '50px',
-  paddingTop: '50px',
+  paddingLeft: '12%',
+  paddingRight: '150px',
+  paddingTop: '25px',
   paddingBottom: '35px',
 }}>
   
@@ -330,21 +354,26 @@ export default function Home() {
             </div>
 
 
-            {/* Popup */}
-            {selected && (
-              <div style={{
-                position: 'absolute',
-                zIndex: 100,
-                left: popupPos.x,
-                top: popupPos.y,
-                pointerEvents: 'auto',
-              }}>
-                <TerritoryPopup
-                  territory={selected}
-                  onClose={() => setSelected(null)}
-                />
-              </div>
-            )}
+
+{selected && (
+  <div style={{
+    position: 'fixed',
+    zIndex: 100,
+    left: popupPos.popupX,
+    top: popupPos.popupY,
+    transform: 'translateY(-50%)',
+    pointerEvents: 'auto',
+  }}>
+    <TerritoryPopup
+      territory={selected}
+      onClose={() => setSelected(null)}
+      targetX={popupPos.targetX}
+      targetY={popupPos.targetY}
+      popupX={popupPos.popupX}
+      popupY={popupPos.popupY}
+    />
+  </div>
+)}
           </div>
         </div>
       </div>

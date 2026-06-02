@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Territory, Winner } from '@/src/lib/supabase'
 
 type TerritoryWithWinners = Territory & { winners: Winner[] }
@@ -11,48 +11,133 @@ type Props = {
   selectedId: number | null
 }
 
-// UKURAN KOTAK YANG LEBIH PAS UNTUK MAP
 const TERRITORY_POSITIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
-  // Las Venturas (paling atas kanan) - kota casino
-  'las-venturas':   { top: '0%',   left: '0%', width: '100%', height: '100%' },
-  
-  // Bone County (gurun, di atas tengah)
-  'bone':           { top: '0%',  left: '0%', width: '100%', height: '100%' },
-  
-  // Tierra Robada (semenanjung barat laut)
-  'tierra-robada':  { top: '0%',   left: '0%', width: '100%', height: '100%' },
-  
-  // San Fierro (kota barat)
-  'san-fierro':     { top: '0%',  left: '0%', width: '100%', height: '100%' },
-  
-  // Red County (pedesaan tengah timur)
-  'red-county':     { top: '0%',  left: '0%', width: '100%', height: '100%' },
-  
-  // Whetstone (pegunungan selatan - Mount Chiliad)
-  'whetstone':      { top: '0%',  left: '0%',  width: '100%', height: '100%' },
-  
-  // Flint County (pedesaan barat daya)
-  'flint':          { top: '0%',  left: '0%', width: '100%', height: '100%' },
-  
-  // Los Santos (kota selatan)
-  'los-santos':     { top: '0%',  left: '0%', width: '100%', height: '100%' },
+  'las-venturas':  { top: '0.3%',  left: '52.5%', width: '41%',   height: '41%'   },
+  'bone':          { top: '0%',    left: '28.5%', width: '42.5%', height: '42.5%' },
+  'tierra-robada': { top: '0.5%',  left: '9.7%',  width: '39.5%', height: '39.5%' },
+  'san-fierro':    { top: '23.8%', left: '1.6%',  width: '50%',   height: '50%'   },
+  'red-county':    { top: '31%',   left: '38%',   width: '47.5%', height: '47.5%' },
+  'whetstone':     { top: '64.5%', left: '8.2%',  width: '35.5%', height: '35.5%' },
+  'flint':         { top: '56%',   left: '17.3%', width: '44%',   height: '44%'   },
+  'los-santos':    { top: '60.1%', left: '47.9%', width: '40.3%', height: '40.3%' },
+}
+
+// Canvas cache untuk pixel detection
+const canvasCache: Record<string, HTMLCanvasElement> = {}
+
+function loadToCanvas(slug: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (canvasCache[slug]) { resolve(); return }
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.src = `/${slug}.png`
+    img.onload = () => {
+      const c = document.createElement('canvas')
+      c.width = img.naturalWidth
+      c.height = img.naturalHeight
+      const ctx = c.getContext('2d', { willReadFrequently: true })!
+      ctx.drawImage(img, 0, 0)
+      canvasCache[slug] = c
+      resolve()
+    }
+    img.onerror = () => resolve()
+  })
+}
+
+function getAlpha(slug: string, relX: number, relY: number): number {
+  const c = canvasCache[slug]
+  if (!c) return 0
+  const ctx = c.getContext('2d', { willReadFrequently: true })!
+  const px = Math.floor(relX * c.width)
+  const py = Math.floor(relY * c.height)
+  if (px < 0 || py < 0 || px >= c.width || py >= c.height) return 0
+  return ctx.getImageData(px, py, 1, 1).data[3]
 }
 
 export default function SaMap({ territories, onSelectTerritory, selectedId }: Props) {
   const [hoveredId, setHoveredId] = useState<number | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Preload semua canvas saat mount
+  useEffect(() => {
+    territories.forEach(t => loadToCanvas(t.slug))
+  }, [territories])
+
+  // ============================================================
+  // CORE: Hit test semua territory dari mouse position di container
+  // ============================================================
+  const hitTest = useCallback((
+    e: React.MouseEvent,
+    mode: 'hover' | 'click'
+  ) => {
+    const container = containerRef.current
+    if (!container) return
+
+    const rect = container.getBoundingClientRect()
+    const mouseX = e.clientX - rect.left  // px dari kiri container
+    const mouseY = e.clientY - rect.top   // px dari atas container
+    const contW = rect.width
+    const contH = rect.height
+
+    // Cek semua territory — yang paling atas (z-index tinggi) duluan
+    // Urutan: las-venturas, bone, tierra-robada, san-fierro, red-county, flint, los-santos, whetstone
+    const order = ['las-venturas','bone','tierra-robada','red-county','san-fierro','flint','los-santos','whetstone']
+
+    for (const slug of order) {
+      const t = territories.find(t => t.slug === slug)
+      const pos = TERRITORY_POSITIONS[slug]
+      if (!t || !pos) continue
+
+      // Convert % position ke px
+      const tLeft = (parseFloat(pos.left) / 100) * contW
+      const tTop  = (parseFloat(pos.top)  / 100) * contH
+      const tW    = (parseFloat(pos.width) / 100) * contW
+      const tH    = (parseFloat(pos.height)/ 100) * contH
+
+      // Apakah mouse dalam bounding box territory ini?
+      if (mouseX < tLeft || mouseX > tLeft + tW) continue
+      if (mouseY < tTop  || mouseY > tTop  + tH) continue
+
+      // Posisi relatif dalam territory (0-1)
+      const relX = (mouseX - tLeft) / tW
+      const relY = (mouseY - tTop)  / tH
+
+      const alpha = getAlpha(slug, relX, relY)
+
+      if (alpha < 30) continue // pixel transparan, skip ke territory berikutnya
+
+      // HIT! Territory ini yang kena
+      if (mode === 'hover') {
+        setHoveredId(t.id)
+      } else {
+        onSelectTerritory(selectedId === t.id ? null : t, e)
+      }
+      return
+    }
+
+    // Ga ada yang kena
+    if (mode === 'hover') setHoveredId(null)
+  }, [territories, selectedId, onSelectTerritory])
 
   return (
-    <div className="relative w-full h-full" style={{ background: '#000' }}>
-      {/* ========== BASE MAP FULL - BACKGROUND UTAMA ========== */}
+    <div
+      ref={containerRef}
+      className="relative w-full h-full"
+      style={{ background: '#000', cursor: hoveredId ? 'pointer' : 'default' }}
+      onMouseMove={(e) => hitTest(e, 'hover')}
+      onMouseLeave={() => setHoveredId(null)}
+      onClick={(e) => hitTest(e, 'click')}
+    >
+      {/* Base map */}
       <img
         src="/map.png"
-        alt="SA Map Full"
+        alt="SA Map"
         className="absolute inset-0 w-full h-full object-contain"
-        style={{ opacity: 1, zIndex: 0 }}
+        style={{ opacity: 1, zIndex: 0, pointerEvents: 'none' }}
         draggable={false}
       />
 
-      {/* ========== TERRITORY PNG OVERLAY (TRANSPARAN) ========== */}
+      {/* Territory overlays - semua pointer-events: none, handler di container */}
       {territories.map((territory) => {
         const pos = TERRITORY_POSITIONS[territory.slug]
         if (!pos) return null
@@ -64,78 +149,74 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
         return (
           <div
             key={territory.slug}
-            className="absolute cursor-pointer transition-all duration-300"
+            className="absolute transition-all duration-300"
             style={{
               top: pos.top,
               left: pos.left,
               width: pos.width,
               height: pos.height,
-              zIndex: 10,
+              zIndex: isHovered || isSelected ? 20 : 10,
+              pointerEvents: 'none', // SEMUA pointer events di container parent
             }}
-            onMouseEnter={() => setHoveredId(territory.id)}
-            onMouseLeave={() => setHoveredId(null)}
-            onClick={(e) => onSelectTerritory(isSelected ? null : territory, e)}
           >
-            {/* Territory PNG */}
             <img
               src={`/${territory.slug}.png`}
               alt={territory.name}
               className="w-full h-full object-contain"
               style={{
-                opacity: isActive ? 0.7 : 0.5,
-                filter: isActive
-                  ? isHovered || isSelected
-                    ? `drop-shadow(0 0 8px ${territory.color}) brightness(1.1)`
-                    : `drop-shadow(0 0 4px ${territory.color}66)`
-                  : isHovered
-                    ? 'brightness(0.9)'
-                    : 'none',
+                opacity: isHovered || isSelected ? 0.9 : isActive ? 0.7 : 0.4,
+filter: isHovered || isSelected
+  ? 'grayscale(1) brightness(0.6) contrast(1.2)'
+  : isActive
+    ? `drop-shadow(0 0 4px ${territory.color}55) brightness(1.0)`
+    : 'grayscale(1) brightness(0.4)',
                 transition: 'all 0.3s ease',
+                pointerEvents: 'none',
               }}
               draggable={false}
             />
 
-            {/* Warna tint overlay */}
+            {/* Color tint */}
             <div
-              className="absolute inset-0 transition-opacity duration-300 pointer-events-none"
+              className="absolute inset-0 pointer-events-none transition-opacity duration-300"
               style={{
                 background: territory.color,
-                opacity: isActive
-                  ? isHovered || isSelected ? 0.3 : 0.15
-                  : isHovered ? 0.1 : 0.03,
+opacity: isHovered || isSelected
+  ? 0
+  : isActive
+    ? 0.1
+    : 0.02,
                 mixBlendMode: 'overlay',
               }}
             />
 
-            {/* Active pulse ring */}
+            {/* Active glow */}
             {isActive && (
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  boxShadow: `inset 0 0 0 2px ${territory.color}`,
-                  opacity: isHovered || isSelected ? 0.8 : 0.4,
-                  animation: 'pulse 2s ease-in-out infinite',
-                  borderRadius: '2px',
+                  boxShadow: `inset 0 0 0 2px ${territory.color}88`,
+                  opacity: isHovered || isSelected ? 1 : 0.4,
+                  animation: 'territorypulse 2s ease-in-out infinite',
                 }}
               />
             )}
 
-            {/* Territory label on hover */}
+            {/* Label */}
             {(isHovered || isSelected) && (
               <div
                 className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 pointer-events-none"
                 style={{
-                  background: '#000000aa',
-                  backdropFilter: 'blur(4px)',
+                  background: '#000000cc',
                   border: `1px solid ${territory.color}`,
                   color: territory.color,
                   fontSize: '9px',
                   fontFamily: 'monospace',
-                  letterSpacing: '0.1em',
+                  letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   fontWeight: 'bold',
-                  textShadow: `0 0 4px ${territory.color}`,
-                  zIndex: 20,
+                  textShadow: `0 0 6px ${territory.color}`,
+                  zIndex: 30,
                 }}
               >
                 {territory.name}
@@ -145,28 +226,10 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
         )
       })}
 
-      {/* Corner HUD decorations */}
-      <div className="absolute bottom-3 right-3 pointer-events-none z-20">
-        <div style={{
-          fontFamily: 'monospace',
-          fontSize: '9px',
-          color: '#ffffff44',
-          textAlign: 'right',
-          lineHeight: 1.6,
-          background: 'rgba(0,0,0,0.4)',
-          padding: '4px 8px',
-          borderRadius: '2px',
-          backdropFilter: 'blur(2px)',
-        }}>
-          <div>{territories.filter(t => t.is_active).length}/{territories.length} ACTIVE</div>
-          <div style={{ color: '#ffffff33' }}>SAN ANDREAS</div>
-        </div>
-      </div>
-
       <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 0.8; }
+        @keyframes territorypulse {
+          0%, 100% { opacity: 0.35; }
+          50% { opacity: 0.9; }
         }
       `}</style>
     </div>
