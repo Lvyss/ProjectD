@@ -218,9 +218,10 @@ const handleSelectTerritory = (
                   style={{
                     maxWidth: '90%',
                     height: 'auto',
-                    maxHeight: '150px',
+                    maxHeight: '250px',
                     objectFit: 'contain',
                     margin: '0 auto',
+                    marginBottom: '-50px',
                   }}
                 />
               </div>
