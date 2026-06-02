@@ -99,7 +99,7 @@ const handleSelectTerritory = (
     let popupX, popupY
     if (isMobile) {
       popupX = window.innerWidth / 2 - 140
-      popupY = window.innerHeight / 2 - 100
+      popupY = window.innerHeight / 2 + 100
     } else {
       popupX = rect.left - 165
       popupY = window.innerHeight / 2 - 80
