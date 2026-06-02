@@ -140,7 +140,7 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
     >
       {/* Base map */}
       <img
-        src="/map1.png"
+        src="/map2.png"
         alt="SA Map"
         className="absolute inset-0 w-full h-full object-contain"
         style={{ opacity: 1, zIndex: 0, pointerEvents: 'none' }}
