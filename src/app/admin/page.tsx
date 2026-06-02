@@ -18,7 +18,6 @@ export default function AdminPage() {
   const [editingWinner, setEditingWinner] = useState<EditingWinner | null>(null)
   const [form, setForm] = useState({
     territory_id: '',
-    rank: '1',
     driver_name: '',
     car_name: '',
     points: '',
@@ -46,25 +45,41 @@ export default function AdminPage() {
 
   const handleSubmitWinner = async () => {
     if (!form.territory_id || !form.driver_name || !form.car_name || !form.points) {
-      showMsg('Semua field wajib diisi!', 'error'); return
+      showMsg('Semua field wajib diisi!', 'error')
+      return
     }
     setLoading(true)
+    
+    // Ambil winner yang sudah ada di territory ini
+    const territory = territories.find(t => t.id === parseInt(form.territory_id))
+    const existingWinners = territory?.winners || []
+    
+    // Rank ditentukan berdasarkan poin (otomatis)
+    const newPoints = parseInt(form.points)
+    let newRank = existingWinners.length + 1
+    for (let i = 0; i < existingWinners.length; i++) {
+      if (newPoints > existingWinners[i].points) {
+        newRank = i + 1
+        break
+      }
+    }
+    
     const res = await fetch('/api/winners', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         password,
         territory_id: parseInt(form.territory_id),
-        rank: parseInt(form.rank),
+        rank: newRank,
         driver_name: form.driver_name,
         car_name: form.car_name,
-        points: parseInt(form.points),
+        points: newPoints,
       }),
     })
     setLoading(false)
     if (res.ok) {
-      showMsg('Winner berhasil disimpan!')
-      setForm({ territory_id: '', rank: '1', driver_name: '', car_name: '', points: '' })
+      showMsg(`Winner berhasil disimpan! (Rank ${newRank} berdasarkan poin)`)
+      setForm({ territory_id: '', driver_name: '', car_name: '', points: '' })
       fetchTerritories()
     } else {
       const err = await res.json()
@@ -75,6 +90,19 @@ export default function AdminPage() {
   const handleEditSubmit = async () => {
     if (!editingWinner) return
     setLoading(true)
+    
+    // Re-rank setelah edit poin
+    const territory = territories.find(t => t.id === editingWinner.territory_id)
+    const otherWinners = territory?.winners.filter(w => w.id !== editingWinner.id) || []
+    const newPoints = editingWinner.points
+    let newRank = otherWinners.length + 1
+    for (let i = 0; i < otherWinners.length; i++) {
+      if (newPoints > otherWinners[i].points) {
+        newRank = i + 1
+        break
+      }
+    }
+    
     const res = await fetch('/api/winners', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -84,13 +112,13 @@ export default function AdminPage() {
         driver_name: editingWinner.driver_name,
         car_name: editingWinner.car_name,
         points: editingWinner.points,
-        rank: editingWinner.rank,
+        rank: newRank,
         territory_id: editingWinner.territory_id,
       }),
     })
     setLoading(false)
     if (res.ok) {
-      showMsg('Winner berhasil diupdate!')
+      showMsg(`Winner berhasil diupdate! (Rank ${newRank} berdasarkan poin)`)
       setEditingWinner(null)
       fetchTerritories()
     } else {
@@ -99,27 +127,20 @@ export default function AdminPage() {
     }
   }
 
-const handleToggleActive = async (territory: TerritoryWithWinners) => {
-  console.log('password:', password)  // cek ini ada isinya ga
-  console.log('territory:', territory.id, territory.is_active)
-  
-  const res = await fetch(`/api/territories/${territory.id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password, is_active: !territory.is_active }),
-  })
-  
-  console.log('status:', res.status)  // cek response statusnya
-  
-  if (res.ok) {
-    showMsg(`${territory.name} ${!territory.is_active ? 'diaktifkan' : 'dinonaktifkan'}!`)
-    fetchTerritories()
-  } else {
-    const err = await res.json()
-    console.log('error:', err)
-    showMsg(`Error: ${err.error}`, 'error')  // tambahin ini biar keliatan errornya
+  const handleToggleActive = async (territory: TerritoryWithWinners) => {
+    const res = await fetch(`/api/territories/${territory.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, is_active: !territory.is_active }),
+    })
+    if (res.ok) {
+      showMsg(`${territory.name} ${!territory.is_active ? 'diaktifkan' : 'dinonaktifkan'}!`)
+      fetchTerritories()
+    } else {
+      const err = await res.json()
+      showMsg(`Error: ${err.error}`, 'error')
+    }
   }
-}
 
   const handleDeleteWinner = async (id: number) => {
     if (!confirm('Hapus winner ini?')) return
@@ -134,10 +155,18 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
     }
   }
 
-  // Filter winners berdasarkan search + territory
-  const allWinners = territories.flatMap(t =>
-    t.winners.map(w => ({ ...w, territory_id: t.id, territoryName: t.name, territoryColor: t.color }))
-  )
+  // Winners dengan rank otomatis berdasarkan poin
+  const allWinners = territories.flatMap(t => {
+    const sortedWinners = [...t.winners].sort((a, b) => b.points - a.points)
+    return sortedWinners.map((w, idx) => ({
+      ...w,
+      territory_id: t.id,
+      territoryName: t.name,
+      territoryColor: t.color,
+      autoRank: idx + 1
+    }))
+  })
+  
   const filteredWinners = allWinners.filter(w => {
     const matchSearch = search === '' ||
       w.driver_name.toLowerCase().includes(search.toLowerCase()) ||
@@ -208,7 +237,12 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
             color: 'rgba(255,255,255,0.4)', textDecoration: 'none',
             fontSize: '0.7rem', letterSpacing: '0.2em',
             padding: '8px 16px', border: '1px solid rgba(255,255,255,0.1)',
-          }}>← BACK TO MAP</a>
+            transition: 'all 0.3s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = '#ff3311'; e.currentTarget.style.borderColor = '#ff3311' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
+            ← BACK TO MAP
+          </a>
         </div>
 
         {/* Notif */}
@@ -244,17 +278,6 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
                 style={iS}
               >
                 {territories.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-
-              <label style={labelS}>Rank</label>
-              <select
-                value={editingWinner.rank}
-                onChange={e => setEditingWinner({ ...editingWinner, rank: parseInt(e.target.value) })}
-                style={iS}
-              >
-                <option value={1}>Rank 1</option>
-                <option value={2}>Rank 2</option>
-                <option value={3}>Rank 3</option>
               </select>
 
               <label style={labelS}>Driver Name</label>
@@ -300,26 +323,23 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
 
           {/* Form Add Winner */}
           <div style={cardS}>
-            <SectionTitle>+ Add / Update Winner</SectionTitle>
+            <SectionTitle>+ Add Winner</SectionTitle>
+            <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: '16px' }}>
+              Rank ditentukan otomatis berdasarkan poin tertinggi
+            </p>
             <label style={labelS}>Territory</label>
             <select value={form.territory_id} onChange={e => setForm({ ...form, territory_id: e.target.value })} style={iS}>
               <option value="">— Pilih Territory —</option>
               {territories.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-            <label style={labelS}>Rank</label>
-            <select value={form.rank} onChange={e => setForm({ ...form, rank: e.target.value })} style={iS}>
-              <option value="1">🥇 Rank 1</option>
-              <option value="2">🥈 Rank 2</option>
-              <option value="3">🥉 Rank 3</option>
-            </select>
             <label style={labelS}>Driver Name</label>
-            <input placeholder="DRIVER NAME" value={form.driver_name}
+            <input placeholder="Contoh: Takumi Fujiwara" value={form.driver_name}
               onChange={e => setForm({ ...form, driver_name: e.target.value })} style={iS} />
             <label style={labelS}>Car Name</label>
-            <input placeholder="CAR NAME" value={form.car_name}
+            <input placeholder="Contoh: Toyota AE86" value={form.car_name}
               onChange={e => setForm({ ...form, car_name: e.target.value })} style={iS} />
             <label style={labelS}>Points</label>
-            <input type="number" placeholder="POINTS" value={form.points}
+            <input type="number" placeholder="Poin (semakin tinggi semakin baik)" value={form.points}
               onChange={e => setForm({ ...form, points: e.target.value })} style={iS} />
             <button onClick={handleSubmitWinner} disabled={loading} style={{ ...bS, marginTop: '16px' }}>
               {loading ? 'SAVING...' : 'SAVE WINNER →'}
@@ -330,41 +350,50 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
           <div style={cardS}>
             <SectionTitle>⚡ Territory Status</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {territories.map(t => (
-                <div key={t.id} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '10px 12px', background: 'rgba(0,0,0,0.3)',
-                  borderLeft: `3px solid ${t.color}`,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                      width: '8px', height: '8px', borderRadius: '50%',
-                      background: t.is_active ? '#00ff88' : 'rgba(255,255,255,0.2)',
-                      boxShadow: t.is_active ? '0 0 6px #00ff88' : 'none',
-                    }} />
-                    <span style={{
-                      fontSize: '0.75rem',
-                      color: t.is_active ? '#fff' : 'rgba(255,255,255,0.4)',
-                    }}>{t.name}</span>
-                  </div>
-                  <button onClick={() => handleToggleActive(t)} style={{
-                    fontSize: '0.65rem', padding: '5px 12px', cursor: 'pointer',
-                    background: t.is_active ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.05)',
-                    color: t.is_active ? '#00ff88' : 'rgba(255,255,255,0.4)',
-                    border: `1px solid ${t.is_active ? '#00ff8844' : 'rgba(255,255,255,0.1)'}`,
-                    fontFamily: 'monospace', transition: 'all 0.2s',
+              {territories.map(t => {
+                const topWinner = [...t.winners].sort((a,b) => b.points - a.points)[0]
+                return (
+                  <div key={t.id} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 12px', background: 'rgba(0,0,0,0.3)',
+                    borderLeft: `3px solid ${t.color}`,
                   }}>
-                    {t.is_active ? '● ACTIVE' : '○ INACTIVE'}
-                  </button>
-                </div>
-              ))}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                      <div style={{
+                        width: '8px', height: '8px', borderRadius: '50%',
+                        background: t.is_active ? '#00ff88' : 'rgba(255,255,255,0.2)',
+                        boxShadow: t.is_active ? '0 0 6px #00ff88' : 'none',
+                      }} />
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: t.is_active ? '#fff' : 'rgba(255,255,255,0.4)' }}>
+                          {t.name}
+                        </div>
+                        {topWinner && (
+                          <div style={{ fontSize: '0.55rem', color: t.color }}>
+                            🏆 {topWinner.driver_name} · {topWinner.points}pt
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <button onClick={() => handleToggleActive(t)} style={{
+                      fontSize: '0.65rem', padding: '5px 12px', cursor: 'pointer',
+                      background: t.is_active ? 'rgba(0,255,136,0.15)' : 'rgba(255,255,255,0.05)',
+                      color: t.is_active ? '#00ff88' : 'rgba(255,255,255,0.4)',
+                      border: `1px solid ${t.is_active ? '#00ff8844' : 'rgba(255,255,255,0.1)'}`,
+                      fontFamily: 'monospace', transition: 'all 0.2s',
+                    }}>
+                      {t.is_active ? '● ACTIVE' : '○ INACTIVE'}
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
 
         {/* Winners Table dengan Search */}
         <div style={cardS}>
-          <SectionTitle>🏆 All Winners</SectionTitle>
+          <SectionTitle>🏆 All Winners (Rank by Points)</SectionTitle>
 
           {/* Search & Filter */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
@@ -389,7 +418,7 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                  {['Territory', 'Rank', 'Driver', 'Car', 'Points', 'Actions'].map(h => (
+                  {['Rank', 'Territory', 'Driver', 'Car', 'Points', 'Actions'].map(h => (
                     <th key={h} style={{
                       padding: '10px 12px', textAlign: 'left',
                       color: 'rgba(255,255,255,0.4)', fontWeight: 'normal',
@@ -417,23 +446,23 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
                     >
                       <td style={{ padding: '10px 12px' }}>
                         <span style={{
+                          color: w.autoRank === 1 ? '#FFD700' : w.autoRank === 2 ? '#C0C0C0' : '#CD7F32',
+                          fontWeight: 'bold',
+                        }}>
+                          #{w.autoRank}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px 12px' }}>
+                        <span style={{
                           color: w.territoryColor, fontSize: '0.7rem',
                           borderLeft: `2px solid ${w.territoryColor}`,
                           paddingLeft: '8px',
                         }}>{w.territoryName}</span>
-                      </td>
-                      <td style={{ padding: '10px 12px' }}>
-                        <span style={{
-                          color: w.rank === 1 ? '#FFD700' : w.rank === 2 ? '#C0C0C0' : '#CD7F32',
-                          fontWeight: 'bold',
-                        }}>
-                          #{w.rank}
-                        </span>
-                      </td>
+                       </td>
                       <td style={{ padding: '10px 12px', color: '#ffffffcc' }}>{w.driver_name}</td>
                       <td style={{ padding: '10px 12px', color: 'rgba(255,255,255,0.5)' }}>{w.car_name}</td>
                       <td style={{ padding: '10px 12px' }}>
-                        <span style={{ color: w.territoryColor, fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem' }}>
+                        <span style={{ color: w.territoryColor, fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem', fontWeight: 'bold' }}>
                           {w.points}pt
                         </span>
                       </td>
@@ -448,8 +477,8 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
                               color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem',
                               fontFamily: 'monospace', transition: 'all 0.2s',
                             }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = '#fff'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#fff'; e.currentTarget.style.color = '#fff' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)' }}
                           >EDIT</button>
                           <button
                             onClick={() => handleDeleteWinner(w.id)}
@@ -460,8 +489,8 @@ const handleToggleActive = async (territory: TerritoryWithWinners) => {
                               color: '#ff331188', fontSize: '0.65rem',
                               fontFamily: 'monospace', transition: 'all 0.2s',
                             }}
-                            onMouseEnter={e => e.currentTarget.style.color = '#ff3311'}
-                            onMouseLeave={e => e.currentTarget.style.color = '#ff331188'}
+                            onMouseEnter={e => { e.currentTarget.style.color = '#ff3311'; e.currentTarget.style.borderColor = '#ff3311' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = '#ff331188'; e.currentTarget.style.borderColor = 'rgba(255,51,17,0.2)' }}
                           >DELETE</button>
                         </div>
                       </td>
@@ -512,6 +541,7 @@ const iS: React.CSSProperties = {
   background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)',
   color: '#fff', fontFamily: "'Share Tech Mono', monospace",
   fontSize: '0.75rem', outline: 'none',
+  transition: 'border 0.2s',
 }
 
 const labelS: React.CSSProperties = {
@@ -526,4 +556,5 @@ const bS: React.CSSProperties = {
   border: 'none', color: '#fff',
   fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem',
   fontWeight: 'bold', letterSpacing: '0.15em', cursor: 'pointer',
+  transition: 'transform 0.2s, box-shadow 0.2s',
 }

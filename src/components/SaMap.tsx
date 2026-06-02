@@ -11,7 +11,8 @@ type Props = {
   selectedId: number | null
 }
 
-const TERRITORY_POSITIONS: Record<string, { top: string; left: string; width: string; height: string }> = {
+// POSISI UNTUK DESKTOP
+const POSITIONS_DESKTOP: Record<string, { top: string; left: string; width: string; height: string }> = {
   'las-venturas':  { top: '0.3%',  left: '52.5%', width: '41%',   height: '41%'   },
   'bone':          { top: '0%',    left: '28.5%', width: '42.5%', height: '42.5%' },
   'tierra-robada': { top: '0.5%',  left: '9.7%',  width: '39.5%', height: '39.5%' },
@@ -20,6 +21,18 @@ const TERRITORY_POSITIONS: Record<string, { top: string; left: string; width: st
   'whetstone':     { top: '64.5%', left: '8.2%',  width: '35.5%', height: '35.5%' },
   'flint':         { top: '56%',   left: '17.3%', width: '44%',   height: '44%'   },
   'los-santos':    { top: '60.1%', left: '47.9%', width: '40.3%', height: '40.3%' },
+}
+
+// POSISI UNTUK MOBILE (disesuaikan lebih besar biar keliatan)
+const POSITIONS_MOBILE: Record<string, { top: string; left: string; width: string; height: string }> = {
+  'las-venturas':  { top: '0%',   left: '60.5%',  width: '41%',   height: '41%'   },
+  'bone':          { top: '0%',   left: '28%',  width: '43%',   height: '43%'   },
+  'tierra-robada': { top: '0.5%',   left: '1.9%',   width: '40.5%',   height: '40.5%'   },
+  'san-fierro':    { top: '24.1%',  left: '-6%',   width: '49.5%',   height: '49.5%'   },
+  'red-county':    { top: '22.7%',  left: '33.9%',  width: '64%',   height: '64%'   },
+  'whetstone':     { top: '64.8%',  left: '0%',   width: '35.5%',   height: '35.5%'   },
+  'flint':         { top: '56%',  left: '13.5%',  width: '44%',   height: '44%'   },
+  'los-santos':    { top: '56.5%',  left: '51.2%',  width: '47%',   height: '47%'   },
 }
 
 // Canvas cache untuk pixel detection
@@ -56,16 +69,27 @@ function getAlpha(slug: string, relX: number, relY: number): number {
 
 export default function SaMap({ territories, onSelectTerritory, selectedId }: Props) {
   const [hoveredId, setHoveredId] = useState<number | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Deteksi mode HP
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Preload semua canvas saat mount
   useEffect(() => {
     territories.forEach(t => loadToCanvas(t.slug))
   }, [territories])
 
-  // ============================================================
-  // CORE: Hit test semua territory dari mouse position di container
-  // ============================================================
+  // Pilih posisi berdasarkan mode
+  const TERRITORY_POSITIONS = isMobile ? POSITIONS_MOBILE : POSITIONS_DESKTOP
+
   const hitTest = useCallback((
     e: React.MouseEvent,
     mode: 'hover' | 'click'
@@ -74,13 +98,11 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
     if (!container) return
 
     const rect = container.getBoundingClientRect()
-    const mouseX = e.clientX - rect.left  // px dari kiri container
-    const mouseY = e.clientY - rect.top   // px dari atas container
+    const mouseX = e.clientX - rect.left
+    const mouseY = e.clientY - rect.top
     const contW = rect.width
     const contH = rect.height
 
-    // Cek semua territory — yang paling atas (z-index tinggi) duluan
-    // Urutan: las-venturas, bone, tierra-robada, san-fierro, red-county, flint, los-santos, whetstone
     const order = ['las-venturas','bone','tierra-robada','red-county','san-fierro','flint','los-santos','whetstone']
 
     for (const slug of order) {
@@ -88,25 +110,20 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
       const pos = TERRITORY_POSITIONS[slug]
       if (!t || !pos) continue
 
-      // Convert % position ke px
       const tLeft = (parseFloat(pos.left) / 100) * contW
       const tTop  = (parseFloat(pos.top)  / 100) * contH
       const tW    = (parseFloat(pos.width) / 100) * contW
       const tH    = (parseFloat(pos.height)/ 100) * contH
 
-      // Apakah mouse dalam bounding box territory ini?
       if (mouseX < tLeft || mouseX > tLeft + tW) continue
       if (mouseY < tTop  || mouseY > tTop  + tH) continue
 
-      // Posisi relatif dalam territory (0-1)
       const relX = (mouseX - tLeft) / tW
       const relY = (mouseY - tTop)  / tH
-
       const alpha = getAlpha(slug, relX, relY)
 
-      if (alpha < 30) continue // pixel transparan, skip ke territory berikutnya
+      if (alpha < 30) continue
 
-      // HIT! Territory ini yang kena
       if (mode === 'hover') {
         setHoveredId(t.id)
       } else {
@@ -115,9 +132,8 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
       return
     }
 
-    // Ga ada yang kena
     if (mode === 'hover') setHoveredId(null)
-  }, [territories, selectedId, onSelectTerritory])
+  }, [territories, selectedId, onSelectTerritory, isMobile])
 
   return (
     <div
@@ -130,14 +146,14 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
     >
       {/* Base map */}
       <img
-        src="/map.png"
+        src="/map1.png"
         alt="SA Map"
         className="absolute inset-0 w-full h-full object-contain"
         style={{ opacity: 1, zIndex: 0, pointerEvents: 'none' }}
         draggable={false}
       />
 
-      {/* Territory overlays - semua pointer-events: none, handler di container */}
+      {/* Territory overlays */}
       {territories.map((territory) => {
         const pos = TERRITORY_POSITIONS[territory.slug]
         if (!pos) return null
@@ -156,7 +172,7 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
               width: pos.width,
               height: pos.height,
               zIndex: isHovered || isSelected ? 20 : 10,
-              pointerEvents: 'none', // SEMUA pointer events di container parent
+              pointerEvents: 'none',
             }}
           >
             <img
@@ -164,12 +180,14 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
               alt={territory.name}
               className="w-full h-full object-contain"
               style={{
-                opacity: isHovered || isSelected ? 0.9 : isActive ? 0.7 : 0.4,
-filter: isHovered || isSelected
-  ? 'grayscale(1) brightness(0.6) contrast(1.2)'
-  : isActive
-    ? `drop-shadow(0 0 4px ${territory.color}55) brightness(1.0)`
-    : 'grayscale(1) brightness(0.4)',
+                opacity: isMobile 
+                  ? (isActive ? (isHovered || isSelected ? 0.85 : 0.7) : (isHovered || isSelected ? 0.5 : 0.35))
+                  : (isActive ? (isHovered || isSelected ? 0.9 : 0.7) : (isHovered || isSelected ? 0.6 : 0.4)),
+                filter: isActive && (isHovered || isSelected)
+                  ? `drop-shadow(0 0 8px ${territory.color}) brightness(1.1)`
+                  : isActive
+                    ? `drop-shadow(0 0 3px ${territory.color}66)`
+                    : 'brightness(0.7)',
                 transition: 'all 0.3s ease',
                 pointerEvents: 'none',
               }}
@@ -181,11 +199,9 @@ filter: isHovered || isSelected
               className="absolute inset-0 pointer-events-none transition-opacity duration-300"
               style={{
                 background: territory.color,
-opacity: isHovered || isSelected
-  ? 0
-  : isActive
-    ? 0.1
-    : 0.02,
+                opacity: isMobile
+                  ? (isActive ? (isHovered || isSelected ? 0.15 : 0.1) : (isHovered || isSelected ? 0.05 : 0.02))
+                  : (isActive ? (isHovered || isSelected ? 0.2 : 0.12) : (isHovered || isSelected ? 0.08 : 0.03)),
                 mixBlendMode: 'overlay',
               }}
             />
@@ -195,7 +211,7 @@ opacity: isHovered || isSelected
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
-                  boxShadow: `inset 0 0 0 2px ${territory.color}88`,
+                  boxShadow: `inset 0 0 0 ${isMobile ? '1px' : '2px'} ${territory.color}88`,
                   opacity: isHovered || isSelected ? 1 : 0.4,
                   animation: 'territorypulse 2s ease-in-out infinite',
                 }}
@@ -208,15 +224,17 @@ opacity: isHovered || isSelected
                 className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 pointer-events-none"
                 style={{
                   background: '#000000cc',
+                  backdropFilter: 'blur(4px)',
                   border: `1px solid ${territory.color}`,
                   color: territory.color,
-                  fontSize: '9px',
+                  fontSize: isMobile ? '7px' : '9px',
                   fontFamily: 'monospace',
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   fontWeight: 'bold',
                   textShadow: `0 0 6px ${territory.color}`,
                   zIndex: 30,
+                  borderRadius: '2px',
                 }}
               >
                 {territory.name}
