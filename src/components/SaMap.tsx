@@ -23,7 +23,7 @@ const POSITIONS_DESKTOP: Record<string, { top: string; left: string; width: stri
   'los-santos':    { top: '60.1%', left: '47.9%', width: '40.3%', height: '40.3%' },
 }
 
-// POSISI UNTUK MOBILE (disesuaikan lebih besar biar keliatan)
+// POSISI UNTUK MOBILE
 const POSITIONS_MOBILE: Record<string, { top: string; left: string; width: string; height: string }> = {
   'las-venturas':  { top: '0%',   left: '60.5%',  width: '41%',   height: '41%'   },
   'bone':          { top: '0%',   left: '28%',  width: '43%',   height: '43%'   },
@@ -72,7 +72,6 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
   const [isMobile, setIsMobile] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Deteksi mode HP
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768)
@@ -82,18 +81,13 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Preload semua canvas saat mount
   useEffect(() => {
     territories.forEach(t => loadToCanvas(t.slug))
   }, [territories])
 
-  // Pilih posisi berdasarkan mode
   const TERRITORY_POSITIONS = isMobile ? POSITIONS_MOBILE : POSITIONS_DESKTOP
 
-  const hitTest = useCallback((
-    e: React.MouseEvent,
-    mode: 'hover' | 'click'
-  ) => {
+  const hitTest = useCallback((e: React.MouseEvent, mode: 'hover' | 'click') => {
     const container = containerRef.current
     if (!container) return
 
@@ -162,6 +156,10 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
         const isSelected = selectedId === territory.id
         const isActive = territory.is_active
 
+        // Kalau selected, territory berubah jadi hitam putih + opacity turun
+        // Kalau tidak selected, normal dengan warna
+        const isGrayscale = isSelected
+        
         return (
           <div
             key={territory.slug}
@@ -180,45 +178,46 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
               alt={territory.name}
               className="w-full h-full object-contain"
               style={{
-                opacity: isMobile 
-                  ? (isActive ? (isHovered || isSelected ? 0.85 : 0.7) : (isHovered || isSelected ? 0.5 : 0.35))
-                  : (isActive ? (isHovered || isSelected ? 0.9 : 0.7) : (isHovered || isSelected ? 0.6 : 0.4)),
-                filter: isActive && (isHovered || isSelected)
-                  ? `drop-shadow(0 0 8px ${territory.color}) brightness(1.1)`
-                  : isActive
-                    ? `drop-shadow(0 0 3px ${territory.color}66)`
-                    : 'brightness(0.7)',
+                opacity: isActive ? 0.8 : 0.5,
+                // Grayscale kalau selected, normal kalau tidak
+                filter: isGrayscale
+                  ? 'grayscale(1) brightness(0.7)'
+                  : isHovered
+                    ? `drop-shadow(0 0 8px ${territory.color}) brightness(1.15)`
+                    : isActive
+                      ? `drop-shadow(0 0 3px ${territory.color}66)`
+                      : 'brightness(0.6)',
                 transition: 'all 0.3s ease',
                 pointerEvents: 'none',
               }}
               draggable={false}
             />
 
-            {/* Color tint */}
-            <div
-              className="absolute inset-0 pointer-events-none transition-opacity duration-300"
-              style={{
-                background: territory.color,
-                opacity: isMobile
-                  ? (isActive ? (isHovered || isSelected ? 0.15 : 0.1) : (isHovered || isSelected ? 0.05 : 0.02))
-                  : (isActive ? (isHovered || isSelected ? 0.2 : 0.12) : (isHovered || isSelected ? 0.08 : 0.03)),
-                mixBlendMode: 'overlay',
-              }}
-            />
-
-            {/* Active glow */}
-            {isActive && (
+            {/* Color tint - ilang kalau selected (hitam putih) */}
+            {!isGrayscale && (
               <div
-                className="absolute inset-0 pointer-events-none"
+                className="absolute inset-0 pointer-events-none transition-opacity duration-300"
                 style={{
-                  boxShadow: `inset 0 0 0 ${isMobile ? '1px' : '2px'} ${territory.color}88`,
-                  opacity: isHovered || isSelected ? 1 : 0.4,
-                  animation: 'territorypulse 2s ease-in-out infinite',
+                  background: territory.color,
+                  opacity: isActive ? (isHovered ? 0.25 : 0.15) : 0.05,
+                  mixBlendMode: 'overlay',
                 }}
               />
             )}
 
-            {/* Label */}
+            {/* Active glow - ilang kalau selected */}
+            {isActive && !isGrayscale && (
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  boxShadow: `inset 0 0 0 ${isMobile ? '1.5px' : '2px'} ${territory.color}aa`,
+                  opacity: isHovered ? 1 : 0.5,
+                  animation: isHovered ? 'territorypulse 2s ease-in-out infinite' : 'none',
+                }}
+              />
+            )}
+
+            {/* Label - muncul saat hover atau selected */}
             {(isHovered || isSelected) && (
               <div
                 className="absolute bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 pointer-events-none"
@@ -246,7 +245,7 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
 
       <style>{`
         @keyframes territorypulse {
-          0%, 100% { opacity: 0.35; }
+          0%, 100% { opacity: 0.4; }
           50% { opacity: 0.9; }
         }
       `}</style>

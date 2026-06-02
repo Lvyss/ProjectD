@@ -89,7 +89,7 @@ const handleSelectTerritory = (
     let popupX, popupY
     if (isMobile) {
       popupX = window.innerWidth / 2 - 140
-      popupY = window.innerHeight / 2 - 60
+      popupY = window.innerHeight / 2 - 0
     } else {
       popupX = rect.left - 165
       popupY = window.innerHeight / 2 - 80
@@ -157,8 +157,8 @@ const handleSelectTerritory = (
     position: 'fixed',
     inset: 0,
     backgroundImage: 'url("/bg.jpeg")',
-    backgroundSize: isMobile ? 'auto 80%' : 'cover',
-    backgroundPosition: isMobile ? '30% -55%' : 'center',
+    backgroundSize: isMobile ? 'auto 40%' : 'cover',
+    backgroundPosition: isMobile ? '30% 20%' : 'center',
     backgroundRepeat: 'no-repeat',
     filter: isMobile ? 'blur(3px) brightness(0.7)' : 'blur(5px) brightness(0.6)',
     transform: isMobile ? 'scale(1)' : 'scale(1.05)',
@@ -200,7 +200,7 @@ const handleSelectTerritory = (
           style={{
             maxWidth: '90%',
             height: 'auto',
-            maxHeight: '150px',
+            maxHeight: '200px',
             objectFit: 'contain',
             margin: '0 auto',
           }}
