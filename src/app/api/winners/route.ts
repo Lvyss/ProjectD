@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/src/lib/supabase'
 
+// PASSWORD SAMA KAYA YANG DI ADMIN PAGE
+const ADMIN_PASSWORD = 'walleyasu'
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { password, territory_id, driver_name, car_name, points } = body
 
-    if (password !== process.env.ADMIN_PASSWORD) {
+    // Validasi password
+    if (password !== ADMIN_PASSWORD) {
+      console.log('Password mismatch: expected', ADMIN_PASSWORD, 'got', password)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -21,7 +26,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: fetchError.message }, { status: 500 })
     }
 
-    // Hitung rank berdasarkan poin (semakin tinggi poin, semakin kecil rank)
+    // Hitung rank berdasarkan poin
     let newRank = existingWinners.length + 1
     for (let i = 0; i < existingWinners.length; i++) {
       if (points > existingWinners[i].points) {
@@ -30,7 +35,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Insert winner baru (rank bisa lebih dari 3 sekarang)
+    // Insert winner baru
     const { data, error } = await supabase
       .from('winners')
       .insert([{ 
@@ -47,7 +52,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Update rank untuk winner yang tergeser (poin lebih kecil)
+    // Update rank untuk winner yang tergeser
     if (newRank <= existingWinners.length) {
       for (let i = newRank - 1; i < existingWinners.length; i++) {
         await supabase
@@ -69,7 +74,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json()
     const { password, id, territory_id, driver_name, car_name, points } = body
 
-    if (password !== process.env.ADMIN_PASSWORD) {
+    if (password !== ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -84,7 +89,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Re-rank semua winner di territory ini berdasarkan points
+    // Re-rank semua winner di territory ini
     const { data: allWinners } = await supabase
       .from('winners')
       .select('*')
@@ -114,7 +119,7 @@ export async function DELETE(req: NextRequest) {
     const body = await req.json()
     const { password, id } = body
 
-    if (password !== process.env.ADMIN_PASSWORD) {
+    if (password !== ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

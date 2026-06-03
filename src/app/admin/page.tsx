@@ -6,6 +6,9 @@ import { Territory, Winner } from '@/src/lib/supabase'
 type TerritoryWithWinners = Territory & { winners: Winner[] }
 type EditingWinner = Winner & { territory_id: number }
 
+// PASSWORD ADMIN (bisa diubah di sini)
+const ADMIN_PASSWORD = 'walleyasu'
+
 export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [authed, setAuthed] = useState(false)
@@ -23,6 +26,23 @@ export default function AdminPage() {
     points: '',
   })
 
+  // Cek localStorage saat pertama kali load
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('admin_authed')
+    if (savedAuth === 'true') {
+      setAuthed(true)
+    }
+  }, [])
+
+  // Simpan ke localStorage ketika authed berubah
+  useEffect(() => {
+    if (authed) {
+      localStorage.setItem('admin_authed', 'true')
+    } else {
+      localStorage.removeItem('admin_authed')
+    }
+  }, [authed])
+
   const fetchTerritories = async () => {
     const res = await fetch('/api/territories')
     const data = await res.json()
@@ -39,8 +59,22 @@ export default function AdminPage() {
     setTimeout(() => setMsg(''), 3000)
   }
 
+  // LOGIN dengan password "walleyasu"
   const handleLogin = () => {
-    if (password.trim()) setAuthed(true)
+    if (password === ADMIN_PASSWORD) {
+      setAuthed(true)
+      setPassword('')
+      showMsg('Login berhasil!', 'success')
+    } else {
+      showMsg('❌ Password salah!', 'error')
+    }
+  }
+
+  // Logout
+  const handleLogout = () => {
+    setAuthed(false)
+    localStorage.removeItem('admin_authed')
+    showMsg('Logged out!', 'success')
   }
 
   const handleSubmitWinner = async () => {
@@ -50,11 +84,9 @@ export default function AdminPage() {
     }
     setLoading(true)
     
-    // Ambil winner yang sudah ada di territory ini
     const territory = territories.find(t => t.id === parseInt(form.territory_id))
     const existingWinners = territory?.winners || []
     
-    // Rank ditentukan berdasarkan poin (otomatis)
     const newPoints = parseInt(form.points)
     let newRank = existingWinners.length + 1
     for (let i = 0; i < existingWinners.length; i++) {
@@ -68,7 +100,7 @@ export default function AdminPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        password,
+        password: ADMIN_PASSWORD,
         territory_id: parseInt(form.territory_id),
         rank: newRank,
         driver_name: form.driver_name,
@@ -91,7 +123,6 @@ export default function AdminPage() {
     if (!editingWinner) return
     setLoading(true)
     
-    // Re-rank setelah edit poin
     const territory = territories.find(t => t.id === editingWinner.territory_id)
     const otherWinners = territory?.winners.filter(w => w.id !== editingWinner.id) || []
     const newPoints = editingWinner.points
@@ -107,7 +138,7 @@ export default function AdminPage() {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        password,
+        password: ADMIN_PASSWORD,
         id: editingWinner.id,
         driver_name: editingWinner.driver_name,
         car_name: editingWinner.car_name,
@@ -131,7 +162,7 @@ export default function AdminPage() {
     const res = await fetch(`/api/territories/${territory.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, is_active: !territory.is_active }),
+      body: JSON.stringify({ password: ADMIN_PASSWORD, is_active: !territory.is_active }),
     })
     if (res.ok) {
       showMsg(`${territory.name} ${!territory.is_active ? 'diaktifkan' : 'dinonaktifkan'}!`)
@@ -147,7 +178,7 @@ export default function AdminPage() {
     const res = await fetch('/api/winners', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, id }),
+      body: JSON.stringify({ password: ADMIN_PASSWORD, id }),
     })
     if (res.ok) {
       showMsg('Winner dihapus!')
@@ -155,7 +186,6 @@ export default function AdminPage() {
     }
   }
 
-  // Winners dengan rank otomatis berdasarkan poin
   const allWinners = territories.flatMap(t => {
     const sortedWinners = [...t.winners].sort((a, b) => b.points - a.points)
     return sortedWinners.map((w, idx) => ({
@@ -194,8 +224,25 @@ export default function AdminPage() {
             letterSpacing: '0.1em', color: '#fff', marginBottom: '8px',
           }}>PROJECT<span style={{ color: '#ff3311' }}>.</span>D</h1>
           <p style={{ fontSize: '0.7rem', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.4)', marginBottom: '24px' }}>ADMIN ACCESS</p>
+          
+          {/* Password salah message */}
+          {msg && msgType === 'error' && (
+            <div style={{
+              marginBottom: '16px',
+              padding: '8px',
+              background: 'rgba(255,51,17,0.15)',
+              border: '1px solid rgba(255,51,17,0.3)',
+              color: '#ff3311',
+              fontSize: '0.7rem',
+            }}>
+              {msg}
+            </div>
+          )}
+          
           <input
-            type="password" placeholder="ENTER PASSWORD" value={password}
+            type="password" 
+            placeholder="ENTER PASSWORD" 
+            value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
             style={{ ...iS, marginBottom: '12px', textAlign: 'center' }}
@@ -221,7 +268,6 @@ export default function AdminPage() {
 
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
 
-        {/* Header */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginBottom: '24px', paddingBottom: '16px',
@@ -233,30 +279,48 @@ export default function AdminPage() {
           }}>PROJECT<span style={{ color: '#ff3311' }}>.</span>D
             <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', marginLeft: '12px' }}>ADMIN</span>
           </h1>
-          <a href="/" style={{
-            color: 'rgba(255,255,255,0.4)', textDecoration: 'none',
-            fontSize: '0.7rem', letterSpacing: '0.2em',
-            padding: '8px 16px', border: '1px solid rgba(255,255,255,0.1)',
-            transition: 'all 0.3s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#ff3311'; e.currentTarget.style.borderColor = '#ff3311' }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
-            ← BACK TO MAP
-          </a>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                color: 'rgba(255,255,255,0.4)',
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.1)',
+                padding: '8px 16px',
+                fontSize: '0.7rem',
+                letterSpacing: '0.2em',
+                cursor: 'pointer',
+                fontFamily: 'monospace',
+                transition: 'all 0.3s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#ff3311'; e.currentTarget.style.borderColor = '#ff3311' }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}
+            >
+              LOGOUT
+            </button>
+            <a href="/" style={{
+              color: 'rgba(255,255,255,0.4)', textDecoration: 'none',
+              fontSize: '0.7rem', letterSpacing: '0.2em',
+              padding: '8px 16px', border: '1px solid rgba(255,255,255,0.1)',
+              transition: 'all 0.3s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#ff3311'; e.currentTarget.style.borderColor = '#ff3311' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)' }}>
+              ← BACK TO MAP
+            </a>
+          </div>
         </div>
 
-        {/* Notif */}
-        {msg && (
+        {msg && msgType === 'success' && (
           <div style={{
             padding: '12px 20px', marginBottom: '20px',
-            background: msgType === 'success' ? 'rgba(0,255,136,0.1)' : 'rgba(255,51,17,0.1)',
-            borderLeft: `3px solid ${msgType === 'success' ? '#00ff88' : '#ff3311'}`,
-            color: msgType === 'success' ? '#00ff88' : '#ff3311',
+            background: 'rgba(0,255,136,0.1)',
+            borderLeft: '3px solid #00ff88',
+            color: '#00ff88',
             fontSize: '0.8rem',
           }}>{msg}</div>
         )}
 
-        {/* Edit Modal */}
         {editingWinner && (
           <div style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
@@ -321,7 +385,6 @@ export default function AdminPage() {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
 
-          {/* Form Add Winner */}
           <div style={cardS}>
             <SectionTitle>+ Add Winner</SectionTitle>
             <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.3)', marginBottom: '16px' }}>
@@ -346,7 +409,6 @@ export default function AdminPage() {
             </button>
           </div>
 
-          {/* Territory Toggle */}
           <div style={cardS}>
             <SectionTitle>⚡ Territory Status</SectionTitle>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -391,11 +453,9 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Winners Table dengan Search */}
         <div style={cardS}>
           <SectionTitle>🏆 All Winners (Rank by Points)</SectionTitle>
 
-          {/* Search & Filter */}
           <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
             <input
               placeholder="🔍 Cari driver atau mobil..."
@@ -413,7 +473,6 @@ export default function AdminPage() {
             </select>
           </div>
 
-          {/* Table */}
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem' }}>
               <thead>
@@ -448,9 +507,7 @@ export default function AdminPage() {
                         <span style={{
                           color: w.autoRank === 1 ? '#FFD700' : w.autoRank === 2 ? '#C0C0C0' : '#CD7F32',
                           fontWeight: 'bold',
-                        }}>
-                          #{w.autoRank}
-                        </span>
+                        }}>#{w.autoRank}</span>
                       </td>
                       <td style={{ padding: '10px 12px' }}>
                         <span style={{
@@ -458,7 +515,7 @@ export default function AdminPage() {
                           borderLeft: `2px solid ${w.territoryColor}`,
                           paddingLeft: '8px',
                         }}>{w.territoryName}</span>
-                       </td>
+                      </td>
                       <td style={{ padding: '10px 12px', color: '#ffffffcc' }}>{w.driver_name}</td>
                       <td style={{ padding: '10px 12px', color: 'rgba(255,255,255,0.5)' }}>{w.car_name}</td>
                       <td style={{ padding: '10px 12px' }}>
