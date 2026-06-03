@@ -5,9 +5,10 @@ const ADMIN_PASSWORD = 'walleyasu'
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await req.json()
     const { password, is_active } = body
 
@@ -18,7 +19,7 @@ export async function PATCH(
     const { data, error } = await supabase
       .from('territories')
       .update({ is_active })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
 
     if (error) {
@@ -27,6 +28,7 @@ export async function PATCH(
 
     return NextResponse.json(data)
   } catch (err) {
+    console.error('Error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
