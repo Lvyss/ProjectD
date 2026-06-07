@@ -618,7 +618,7 @@ const handleSelectTerritory = (
         {/* RIGHT MAP MOBILE */}
         <div style={{ width: '58%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }} ref={mapRef}>
           <div style={{ width: 'calc(100% - 10px)', height: 'calc(100% - 10px)', background: '#00000055',  transform: 'scale(0.7)', 
-    transformOrigin: 'center', marginTop: '-25%', marginRight: '-10%' }}>
+    transformOrigin: 'center', marginTop: '-30%', marginRight: '-10%' }}>
             <SaMap territories={territories} onSelectTerritory={handleSelectTerritory} selectedId={selected?.id ?? null} />
           </div>
           {selected && (
