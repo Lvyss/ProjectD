@@ -21,15 +21,15 @@ const RANK_BADGES: Record<number, { label: string; color: string }> = {
 }
 
 // Fungsi untuk merge winners dengan driver yang sama
-function mergeWinnersByDriver(winners: Winner[]): (Winner & { merged_cars: string })[] {
+// Fungsi untuk merge winners dengan driver yang sama
+function mergeWinnersByDriver(winners: Winner[]): any[] {
   const driverMap = new Map<string, { points: number; cars: Set<string>; rank: number }>()
   
   for (const w of winners) {
     if (driverMap.has(w.driver_name)) {
       const existing = driverMap.get(w.driver_name)!
       existing.points += w.points
-      existing.cars.add(w.car_name)
-      // ambil rank terbaik (angka terkecil)
+      w.car_name.split(', ').forEach(car => existing.cars.add(car))
       existing.rank = Math.min(existing.rank, w.rank)
     } else {
       driverMap.set(w.driver_name, {
@@ -40,19 +40,15 @@ function mergeWinnersByDriver(winners: Winner[]): (Winner & { merged_cars: strin
     }
   }
   
-  // Konversi ke array dan urutkan berdasarkan poin tertinggi
   const merged = Array.from(driverMap.entries()).map(([driver_name, data]) => ({
-    id: driver_name, // temporary id
-    territory_id: 0,
-    rank: data.rank,
-    driver_name,
+    id: driver_name, // string id temporary
+    driver_name: driver_name,
     car_name: Array.from(data.cars).join(', '),
     points: data.points,
-    created_at: '',
+    rank: data.rank,
     merged_cars: Array.from(data.cars).join(', ')
   }))
   
-  // Urutkan berdasarkan poin tertinggi
   return merged.sort((a, b) => b.points - a.points)
 }
 
