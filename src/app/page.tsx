@@ -281,40 +281,41 @@ const handleSelectTerritory = (
           {activeTab === 'MENU' ? (
             <div style={{ flex: 1, overflowY: 'auto' }}>
               {/* Menu TERRITORY */}
-              <div
-                onClick={() => setActiveTab('TERRITORY')}
-                style={{
-                  padding: '10px 0px 6px 0px',
-                  marginBottom: '8px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => {
-                  const img = e.currentTarget.querySelector('.stroke-img-mobile')
-                  if (img) img.src = '/stroke2.png'
-                }}
-                onMouseLeave={e => {
-                  const img = e.currentTarget.querySelector('.stroke-img-mobile')
-                  if (img) img.src = '/stroke1.png'
-                }}
-              >
-                <div style={{ 
-                  fontFamily: "'Orbitron', sans-serif", 
-                  fontSize: '0.6rem', 
-                  fontWeight: 700, 
-                  color: '#fff', 
-                  letterSpacing: '0.1em',
-                  marginBottom: '4px',
-                }}>
-                  TERRITORY
-                </div>
-                <img 
-                  className="stroke-img-mobile"
-                  src="/stroke1.png" 
-                  alt=""
-                  style={{ width: '65%', height: 'auto', display: 'block',marginTop: '-3%' }}
-                />
-              </div>
+{/* Menu TERRITORY */}
+<div
+  onClick={() => setActiveTab('TERRITORY')}
+  style={{
+    padding: '4px 0px 3px 0px',
+    marginBottom: '4px',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  }}
+  onMouseEnter={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke2.png'
+  }}
+  onMouseLeave={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke1.png'
+  }}
+>
+  <div style={{ 
+    fontFamily: "'Orbitron', sans-serif", 
+    fontSize: '0.6rem', 
+    fontWeight: 700, 
+    color: '#fff', 
+    letterSpacing: '0.08em',
+    marginBottom: '2px',
+  }}>
+    TERRITORY
+  </div>
+  <img 
+    className="stroke-img-mobile"
+    src="/stroke1.png" 
+    alt=""
+    style={{ width: '100%', height: 'auto', display: 'block' }}
+  />
+</div>
 
               {/* Menu STREET RANK */}
               <div
@@ -325,15 +326,15 @@ const handleSelectTerritory = (
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
-                onMouseEnter={e => {
-                  const img = e.currentTarget.querySelector('.stroke-img-mobile')
-                  if (img) img.src = '/stroke2.png'
-                }}
-                onMouseLeave={e => {
-                  const img = e.currentTarget.querySelector('.stroke-img-mobile')
-                  if (img) img.src = '/stroke1.png'
-                }}
-              >
+  onMouseEnter={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke2.png'
+  }}
+  onMouseLeave={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke1.png'
+  }}
+>
                 <div style={{ 
                   fontFamily: "'Orbitron', sans-serif", 
                   fontSize: '0.6rem', 
@@ -361,15 +362,15 @@ const handleSelectTerritory = (
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
-                onMouseEnter={e => {
-                  const img = e.currentTarget.querySelector('.stroke-img-mobile')
-                  if (img) img.src = '/stroke2.png'
-                }}
-                onMouseLeave={e => {
-                  const img = e.currentTarget.querySelector('.stroke-img-mobile')
-                  if (img) img.src = '/stroke1.png'
-                }}
-              >
+  onMouseEnter={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke2.png'
+  }}
+  onMouseLeave={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke1.png'
+  }}
+>
                 <div style={{ 
                   fontFamily: "'Orbitron', sans-serif", 
                   fontSize: '0.6rem', 
@@ -397,15 +398,15 @@ const handleSelectTerritory = (
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
-                onMouseEnter={e => {
-                  const img = e.currentTarget.querySelector('.stroke-img-mobile')
-                  if (img) img.src = '/stroke2.png'
-                }}
-                onMouseLeave={e => {
-                  const img = e.currentTarget.querySelector('.stroke-img-mobile')
-                  if (img) img.src = '/stroke1.png'
-                }}
-              >
+  onMouseEnter={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke2.png'
+  }}
+  onMouseLeave={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke1.png'
+  }}
+>
                 <div style={{ 
                   fontFamily: "'Orbitron', sans-serif", 
                   fontSize: '0.6rem', 
@@ -678,15 +679,15 @@ const handleSelectTerritory = (
         cursor: 'pointer',
         transition: 'all 0.2s',
       }}
-      onMouseEnter={e => {
-        const img = e.currentTarget.querySelector('.stroke-img')
-        if (img) img.src = '/stroke2.png'
-      }}
-      onMouseLeave={e => {
-        const img = e.currentTarget.querySelector('.stroke-img')
-        if (img) img.src = '/stroke1.png'
-      }}
-    >
+  onMouseEnter={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke2.png'
+  }}
+  onMouseLeave={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke1.png'
+  }}
+>
       <div 
         style={{ 
           fontFamily: "'Orbitron', sans-serif", 
@@ -716,15 +717,15 @@ const handleSelectTerritory = (
         cursor: 'pointer',
         transition: 'all 0.2s',
       }}
-      onMouseEnter={e => {
-        const img = e.currentTarget.querySelector('.stroke-img')
-        if (img) img.src = '/stroke2.png'
-      }}
-      onMouseLeave={e => {
-        const img = e.currentTarget.querySelector('.stroke-img')
-        if (img) img.src = '/stroke1.png'
-      }}
-    >
+  onMouseEnter={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke2.png'
+  }}
+  onMouseLeave={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke1.png'
+  }}
+>
       <div 
         style={{ 
           fontFamily: "'Orbitron', sans-serif", 
@@ -754,15 +755,15 @@ const handleSelectTerritory = (
         cursor: 'pointer',
         transition: 'all 0.2s',
       }}
-      onMouseEnter={e => {
-        const img = e.currentTarget.querySelector('.stroke-img')
-        if (img) img.src = '/stroke2.png'
-      }}
-      onMouseLeave={e => {
-        const img = e.currentTarget.querySelector('.stroke-img')
-        if (img) img.src = '/stroke1.png'
-      }}
-    >
+  onMouseEnter={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke2.png'
+  }}
+  onMouseLeave={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke1.png'
+  }}
+>
       <div 
         style={{ 
           fontFamily: "'Orbitron', sans-serif", 
@@ -792,15 +793,15 @@ const handleSelectTerritory = (
         cursor: 'pointer',
         transition: 'all 0.2s',
       }}
-      onMouseEnter={e => {
-        const img = e.currentTarget.querySelector('.stroke-img')
-        if (img) img.src = '/stroke2.png'
-      }}
-      onMouseLeave={e => {
-        const img = e.currentTarget.querySelector('.stroke-img')
-        if (img) img.src = '/stroke1.png'
-      }}
-    >
+  onMouseEnter={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke2.png'
+  }}
+  onMouseLeave={e => {
+    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    if (img) img.src = '/stroke1.png'
+  }}
+>
       <div 
         style={{ 
           fontFamily: "'Orbitron', sans-serif", 
