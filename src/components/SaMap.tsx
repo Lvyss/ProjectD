@@ -13,14 +13,14 @@ type Props = {
 
 // POSISI UNTUK DESKTOP
 const POSITIONS_DESKTOP: Record<string, { top: string; left: string; width: string; height: string }> = {
-  'las-venturas':  { top: '0.3%',  left: '52.5%', width: '41%',   height: '41%'   },
+  'las-venturas':  { top: '0.3%',  left: '56.5%', width: '41%',   height: '41%'   },
   'bone':          { top: '0%',    left: '28.5%', width: '42.5%', height: '42.5%' },
-  'tierra-robada': { top: '0.5%',  left: '9.7%',  width: '39.5%', height: '39.5%' },
-  'san-fierro':    { top: '23.8%', left: '1.6%',  width: '50%',   height: '50%'   },
-  'red-county':    { top: '31%',   left: '38%',   width: '47.5%', height: '47.5%' },
-  'whetstone':     { top: '64.5%', left: '8.2%',  width: '35.5%', height: '35.5%' },
-  'flint':         { top: '56%',   left: '17.3%', width: '44%',   height: '44%'   },
-  'los-santos':    { top: '60.1%', left: '47.9%', width: '40.3%', height: '40.3%' },
+  'tierra-robada': { top: '0.5%',  left: '6.5%',  width: '39.3%', height: '39.3%' },
+  'san-fierro':    { top: '23.8%', left: '-1.6%',  width: '50%',   height: '50%'   },
+  'red-county':    { top: '27.1%',   left: '36.2%',   width: '55%', height: '55%' },
+  'whetstone':     { top: '64.5%', left: '4%',  width: '35.5%', height: '35.5%' },
+  'flint':         { top: '55.5%',   left: '15.7%', width: '44%',   height: '44%'   },
+  'los-santos':    { top: '60.1%', left: '51%', width: '40.3%', height: '40.3%' },
 }
 
 // POSISI UNTUK MOBILE
@@ -133,17 +133,31 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
     <div
       ref={containerRef}
       className="relative w-full h-full"
-      style={{ background: '#000', cursor: hoveredId ? 'pointer' : 'default' }}
+      style={{ 
+        background: '#000', 
+        cursor: hoveredId ? 'pointer' : 'default',
+        // Hilangkan highlight biru di mobile
+        WebkitTapHighlightColor: 'transparent',
+        touchAction: 'manipulation', // improve tap responsiveness
+      }}
       onMouseMove={(e) => hitTest(e, 'hover')}
       onMouseLeave={() => setHoveredId(null)}
       onClick={(e) => hitTest(e, 'click')}
+      onContextMenu={(e) => e.preventDefault()} // hilangkan menu save image
     >
       {/* Base map */}
       <img
         src="/map2.png"
         alt="SA Map"
         className="absolute inset-0 w-full h-full object-contain"
-        style={{ opacity: 1, zIndex: 0, pointerEvents: 'none' }}
+        style={{ 
+          opacity: 1, 
+          zIndex: 0, 
+          pointerEvents: 'none',
+          // Hilangkan default behavior gambar di mobile
+          WebkitTouchCallout: 'none',
+          userSelect: 'none',
+        }}
         draggable={false}
       />
 
@@ -156,8 +170,6 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
         const isSelected = selectedId === territory.id
         const isActive = territory.is_active
 
-        // Kalau selected, territory berubah jadi hitam putih + opacity turun
-        // Kalau tidak selected, normal dengan warna
         const isGrayscale = isSelected
         
         return (
@@ -178,8 +190,7 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
               alt={territory.name}
               className="w-full h-full object-contain"
               style={{
-                opacity: isActive ? 0.8 : 0.5,
-                // Grayscale kalau selected, normal kalau tidak
+                opacity: isActive ? 0.4 : 0.5,
                 filter: isGrayscale
                   ? 'grayscale(1) brightness(0.7)'
                   : isHovered
@@ -189,8 +200,12 @@ export default function SaMap({ territories, onSelectTerritory, selectedId }: Pr
                       : 'brightness(0.6)',
                 transition: 'all 0.3s ease',
                 pointerEvents: 'none',
+                // Hilangkan default behavior gambar
+                WebkitTouchCallout: 'none',
+                userSelect: 'none',
               }}
               draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
             />
 
             {/* Color tint - ilang kalau selected (hitam putih) */}

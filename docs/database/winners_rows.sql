@@ -1,0 +1,1 @@
+INSERT INTO "public"."winners" ("id", "territory_id", "rank", "driver_name", "car_name", "points", "created_at") VALUES (21, 1, 1, 'Hanley Varga', 'Benson', 25, '2026-06-03 11:30:50.759332'), (22, 1, 2, 'Santino Chris', 'Bmx', 1, '2026-06-03 11:31:25.003638');

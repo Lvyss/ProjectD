@@ -20,16 +20,52 @@ const RANK_BADGES: Record<number, { label: string; color: string }> = {
   3: { label: '3RD', color: '#CD7F32' },
 }
 
+// Fungsi untuk merge winners dengan driver yang sama
+function mergeWinnersByDriver(winners: Winner[]): (Winner & { merged_cars: string })[] {
+  const driverMap = new Map<string, { points: number; cars: Set<string>; rank: number }>()
+  
+  for (const w of winners) {
+    if (driverMap.has(w.driver_name)) {
+      const existing = driverMap.get(w.driver_name)!
+      existing.points += w.points
+      existing.cars.add(w.car_name)
+      // ambil rank terbaik (angka terkecil)
+      existing.rank = Math.min(existing.rank, w.rank)
+    } else {
+      driverMap.set(w.driver_name, {
+        points: w.points,
+        cars: new Set([w.car_name]),
+        rank: w.rank
+      })
+    }
+  }
+  
+  // Konversi ke array dan urutkan berdasarkan poin tertinggi
+  const merged = Array.from(driverMap.entries()).map(([driver_name, data]) => ({
+    id: driver_name, // temporary id
+    territory_id: 0,
+    rank: data.rank,
+    driver_name,
+    car_name: Array.from(data.cars).join(', '),
+    points: data.points,
+    created_at: '',
+    merged_cars: Array.from(data.cars).join(', ')
+  }))
+  
+  // Urutkan berdasarkan poin tertinggi
+  return merged.sort((a, b) => b.points - a.points)
+}
+
 export default function TerritoryPopup({ territory, onClose, targetX, targetY, popupX, popupY }: Props) {
   const [isMobile, setIsMobile] = useState(false)
   const [showAll, setShowAll] = useState(false)
   
-  // Sort winners by rank
-  const sortedWinners = [...territory.winners].sort((a, b) => a.rank - b.rank)
+  // Merge winners berdasarkan driver yang sama
+  const mergedWinners = mergeWinnersByDriver(territory.winners)
   
   // Tampilkan hanya top 3 jika showAll false, else semua
-  const displayedWinners = showAll ? sortedWinners : sortedWinners.slice(0, 3)
-  const hasMoreWinners = sortedWinners.length > 3
+  const displayedWinners = showAll ? mergedWinners : mergedWinners.slice(0, 3)
+  const hasMoreWinners = mergedWinners.length > 3
 
   // Deteksi mode HP
   useEffect(() => {
@@ -45,36 +81,32 @@ export default function TerritoryPopup({ territory, onClose, targetX, targetY, p
   // SETTINGAN GARIS PENUNJUK - 2 TIPE (DESKTOP & MOBILE)
   // ============================================================
   
-  // OFFSET PANGKAL GARIS (dari pojok kiri popup)
   const ANCHOR_X = isMobile ? 138 : 245
   const ANCHOR_Y = isMobile ? 15 : 25
-  
-  // OFFSET UJUNG GARIS (dari center territory)
   const TARGET_OFFSET_X = 0
   const TARGET_OFFSET_Y = 0
-  
-  // GARIS: ketebalan, warna, opacity
   const LINE_WIDTH = '1px'
   const LINE_COLOR = '#ffffff'
   const LINE_OPACITY = 0.7
-  
-  // DOT UKURAN
   const DOT_SIZE_END = 6
   const DOT_SIZE_START = isMobile ? 6 : 4
-  
-  // ============================================================
-  // PERHITUNGAN GARIS
-  // ============================================================
   
   const fromX = popupX + ANCHOR_X
   const fromY = popupY + ANCHOR_Y
   const targetFinalX = targetX + TARGET_OFFSET_X
   const targetFinalY = targetY + TARGET_OFFSET_Y
-
   const dx = targetFinalX - fromX
   const dy = targetFinalY - fromY
   const angle = Math.atan2(dy, dx) * (180 / Math.PI)
   const length = Math.sqrt(dx * dx + dy * dy)
+
+  // Hitung rank untuk display (1,2,3,... berdasarkan poin)
+  const getDisplayRank = (idx: number) => {
+    if (idx === 0) return 1
+    if (idx === 1) return 2
+    if (idx === 2) return 3
+    return idx + 1
+  }
 
   return (
     <>
@@ -101,7 +133,6 @@ export default function TerritoryPopup({ territory, onClose, targetX, targetY, p
         opacity: LINE_OPACITY,
       }} />
 
-      {/* Dot di ujung (territory) */}
       <div style={{
         position: 'fixed',
         left: targetFinalX - DOT_SIZE_END / 2,
@@ -115,7 +146,6 @@ export default function TerritoryPopup({ territory, onClose, targetX, targetY, p
         zIndex: 90,
       }} />
 
-      {/* Dot di pangkal (popup) */}
       <div style={{
         position: 'fixed',
         left: fromX - DOT_SIZE_START / 2,
@@ -129,7 +159,7 @@ export default function TerritoryPopup({ territory, onClose, targetX, targetY, p
         zIndex: 90,
       }} />
 
-      {/* ========== POPUP CARD ========== */}
+      {/* POPUP CARD */}
       <div style={{
         background: 'transparent',
         minWidth: isMobile ? '280px' : '250px',
@@ -163,7 +193,6 @@ export default function TerritoryPopup({ territory, onClose, targetX, targetY, p
             }}>
               {territory.name.toUpperCase()}
             </div>
-
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
@@ -197,7 +226,7 @@ export default function TerritoryPopup({ territory, onClose, targetX, targetY, p
           ))}
         </div>
 
-        {/* Tabel body dengan batasan tinggi dan scroll */}
+        {/* Tabel body dengan merge data */}
         <div style={{
           maxHeight: showAll ? (isMobile ? '150px' : '150px') : 'auto',
           overflowY: showAll ? 'auto' : 'visible',
@@ -212,82 +241,85 @@ export default function TerritoryPopup({ territory, onClose, targetX, targetY, p
               letterSpacing: '0.2em',
             }}>— NO DATA —</div>
           ) : (
-            displayedWinners.map((winner, idx) => (
-              <div key={winner.id} style={{
-                display: 'grid',
-                gridTemplateColumns: '48px 1fr 1fr 52px',
-                borderBottom: idx < displayedWinners.length - 1
-                  ? '1px solid rgba(255,255,255,0.5)' : 'none',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={(e) => {
-                if (winner.rank > 3) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-              }}>
-                <div style={{
-                  padding: '9px 10px',
-                  borderRight: '1px solid rgba(255,255,255,0.5)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+            displayedWinners.map((winner, idx) => {
+              const displayRank = getDisplayRank(idx)
+              return (
+                <div key={winner.id} style={{
+                  display: 'grid',
+                  gridTemplateColumns: '48px 1fr 1fr 52px',
+                  borderBottom: idx < displayedWinners.length - 1
+                    ? '1px solid rgba(255,255,255,0.5)' : 'none',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  if (displayRank > 3) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent'
                 }}>
-                  <span style={{
-                    fontFamily: "'Orbitron', sans-serif",
-                    fontSize: '0.62rem',
-                    fontWeight: 'bold',
-                    color: winner.rank <= 3 ? RANK_BADGES[winner.rank].color : 'rgba(255,255,255,0.4)',
-                    animation: winner.rank === 1 ? 'gold-blink 1.2s ease-in-out infinite' : 'none',
+                  <div style={{
+                    padding: '9px 10px',
+                    borderRight: '1px solid rgba(255,255,255,0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
-                    {winner.rank <= 3 ? RANK_BADGES[winner.rank].label : `#${winner.rank}`}
-                  </span>
-                </div>
+                    <span style={{
+                      fontFamily: "'Orbitron', sans-serif",
+                      fontSize: '0.62rem',
+                      fontWeight: 'bold',
+                      color: displayRank <= 3 ? RANK_BADGES[displayRank]?.color || 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.4)',
+                      animation: displayRank === 1 ? 'gold-blink 1.2s ease-in-out infinite' : 'none',
+                    }}>
+                      {displayRank <= 3 ? RANK_BADGES[displayRank]?.label || `#${displayRank}` : `#${displayRank}`}
+                    </span>
+                  </div>
 
-                <div style={{
-                  padding: '9px 10px',
-                  borderRight: '1px solid rgba(255,255,255,0.5)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{
-                    fontSize: '0.68rem',
-                    color: '#ffffff',
-                    wordBreak: 'break-word',
-                    textAlign: 'center',
-                    width: '100%',
-                  }}>{winner.driver_name}</span>
-                </div>
+                  <div style={{
+                    padding: '9px 10px',
+                    borderRight: '1px solid rgba(255,255,255,0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <span style={{
+                      fontSize: '0.68rem',
+                      color: '#ffffff',
+                      wordBreak: 'break-word',
+                      textAlign: 'center',
+                      width: '100%',
+                    }}>{winner.driver_name}</span>
+                  </div>
 
-                <div style={{
-                  padding: '9px 10px',
-                  borderRight: '1px solid rgba(255,255,255,0.5)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{
-                    fontSize: '0.6rem',
-                    color: '#ffffff',
-                    wordBreak: 'break-word',
-                    textAlign: 'center',
-                    width: '100%',
-                  }}>{winner.car_name}</span>
-                </div>
+                  <div style={{
+                    padding: '9px 10px',
+                    borderRight: '1px solid rgba(255,255,255,0.5)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <span style={{
+                      fontSize: '0.55rem',
+                      color: 'rgba(255,255,255,0.6)',
+                      wordBreak: 'break-word',
+                      textAlign: 'center',
+                      width: '100%',
+                    }}>{winner.merged_cars || winner.car_name}</span>
+                  </div>
 
-                <div style={{
-                  padding: '9px 10px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <span style={{
-                    fontFamily: "'Orbitron', sans-serif",
-                    fontSize: '0.65rem',
-                    fontWeight: 'bold',
-                    color: winner.rank === 1 ? '#FFD700' : 'rgba(255,255,255,0.7)',
-                    animation: winner.rank === 1 ? 'gold-blink 1.2s ease-in-out infinite' : 'none',
-                  }}>{winner.points}</span>
+                  <div style={{
+                    padding: '9px 10px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <span style={{
+                      fontFamily: "'Orbitron', sans-serif",
+                      fontSize: '0.65rem',
+                      fontWeight: 'bold',
+                      color: displayRank === 1 ? '#FFD700' : 'rgba(255,255,255,0.7)',
+                      animation: displayRank === 1 ? 'gold-blink 1.2s ease-in-out infinite' : 'none',
+                    }}>{winner.points}</span>
+                  </div>
                 </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
 
-        {/* Footer dengan tombol VIEW ALL */}
+        {/* Footer */}
         <div style={{
           padding: '7px 12px',
           borderTop: '1px solid rgba(255,255,255,0.5)',
@@ -324,11 +356,11 @@ export default function TerritoryPopup({ territory, onClose, targetX, targetY, p
                 e.currentTarget.style.borderColor = `${territory.color}44`
               }}
             >
-              {showAll ? '▲ SHOW LESS' : `▼ VIEW ALL (${sortedWinners.length})`}
+              {showAll ? '▲ SHOW LESS' : `▼ VIEW ALL (${mergedWinners.length})`}
             </button>
           )}
           
-          <span>WINNERS {sortedWinners.length}/3</span>
+          <span>WINNERS {mergedWinners.length}</span>
         </div>
       </div>
     </>
