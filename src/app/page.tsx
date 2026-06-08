@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase, Territory, Winner } from '@/src/lib/supabase'
 import SaMap from '@/src/components/SaMap'
 import TerritoryPopup from '@/src/components/TerritoryPopup'
+import { FaInstagram, FaWhatsapp, FaGithub } from 'react-icons/fa'
 
 type TerritoryWithWinners = Territory & { winners: Winner[] }
 
@@ -271,17 +272,17 @@ const handleSelectTerritory = (
           flexShrink: 0,
           display: 'flex',
           flexDirection: 'column',
-          paddingLeft: '7%',
+          paddingLeft: '5%',
           paddingRight: '0px',
           overflow: 'hidden',
           height: '100%',
+          maxHeight: '71%',  // ← TAMBAHKAN INI
         }}>
           
           {/* ========== MENU PILIHAN MOBILE ========== */}
           {activeTab === 'MENU' ? (
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ flex: 1, overflowY: 'auto'}}>
               {/* Menu TERRITORY */}
-{/* Menu TERRITORY */}
 <div
   onClick={() => setActiveTab('TERRITORY')}
   style={{
@@ -291,11 +292,11 @@ const handleSelectTerritory = (
     transition: 'all 0.2s',
   }}
   onMouseEnter={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke2.png'
   }}
   onMouseLeave={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke1.png'
   }}
 >
@@ -306,6 +307,7 @@ const handleSelectTerritory = (
     color: '#fff', 
     letterSpacing: '0.08em',
     marginBottom: '2px',
+    marginLeft: '5%',
   }}>
     TERRITORY
   </div>
@@ -342,6 +344,7 @@ const handleSelectTerritory = (
                   color: '#fff', 
                   letterSpacing: '0.1em',
                   marginBottom: '4px',
+                  marginLeft: '5%',
                 }}>
                   STREET RANK
                 </div>
@@ -378,6 +381,7 @@ const handleSelectTerritory = (
                   color: '#fff', 
                   letterSpacing: '0.1em',
                   marginBottom: '4px',
+                  marginLeft: '5%',
                 }}>
                   RANK BY CAR
                 </div>
@@ -414,6 +418,7 @@ const handleSelectTerritory = (
                   color: '#fff', 
                   letterSpacing: '0.1em',
                   marginBottom: '4px',
+                  marginLeft: '5%',
                 }}>
                   CREDIT
                 </div>
@@ -558,26 +563,53 @@ const handleSelectTerritory = (
                 )}
 
                 {/* Konten CREDIT MOBILE */}
-                {activeTab === 'CREDIT' && (
-                  <div style={{ textAlign: 'center', padding: '10px' }}>
-                    <img src="/logo3.png" alt="PROJECT.D" style={{ maxWidth: '80px', margin: '0 auto', opacity: 0.8 }} />
-                    <p style={{ fontSize: '0.55rem', color: '#ff3311', marginTop: '8px', letterSpacing: '0.15em' }}>V.S. PROJECT</p>
-                    <p style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', marginTop: '12px', lineHeight: 1.5 }}>
-                      GTA San Andreas<br />Territory Control System
-                    </p>
-                    <p style={{ fontSize: '0.45rem', color: 'rgba(255,255,255,0.25)', marginTop: '8px' }}>Version 1.0</p>
-                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '15px', paddingTop: '15px' }}>
-                      <p style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}>SOCIALS</p>
-                      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                        <a href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.5rem' }}>IG</a>
-                        <a href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.5rem' }}>TW</a>
-                        <a href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.5rem' }}>DC</a>
-                        <a href="#" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.5rem' }}>GH</a>
-                      </div>
-                    </div>
-                    <p style={{ marginTop: '15px', fontSize: '0.4rem', color: 'rgba(255,255,255,0.15)' }}>© 2024 V.S.Project</p>
-                  </div>
-                )}
+{/* Konten CREDIT MOBILE */}
+{activeTab === 'CREDIT' && (
+  <div style={{ textAlign: 'left', padding: '5px', marginTop: '-10%' }}>
+    <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+      <img src="/logo3.png" alt="V.S.PROJECT" style={{ maxWidth: '60px', margin: '0 auto', opacity: 0.9 }} />
+    </div>
+    
+    <div style={{ marginBottom: '12px' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '3px', marginBottom: '8px' }}>
+        <span style={{ fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>DEVELOPER</span>
+      </div>
+      <p style={{ fontSize: '0.55rem', color: '#fff' }}>Eka Nanda Susila</p>
+    </div>
+
+    <div style={{ marginBottom: '12px' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '3px', marginBottom: '8px' }}>
+        <span style={{ fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>TECH</span>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+        {['Next.js', 'Supabase', 'TS', 'Tailwind'].map(tech => (
+          <span key={tech} style={{ fontSize: '0.45rem', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: '2px' }}>{tech}</span>
+        ))}
+      </div>
+    </div>
+
+<div style={{ marginBottom: '12px' }}>
+  <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '3px', marginBottom: '8px' }}>
+    <span style={{ fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>SOCIALS</span>
+  </div>
+  <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
+    <a href="https://www.instagram.com/eka_nanda27/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.5)', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#E4405F'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}>
+      <FaInstagram size={18} />
+    </a>
+    <a href="https://wa.me/6282228281263" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.5)', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#1DA1F2'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}>
+      <FaWhatsapp size={18} />
+    </a>
+    <a href="https://github.com/Lvyss" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.5)', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}>
+      <FaGithub size={18} />
+    </a>
+  </div>
+</div>
+
+    <div style={{ textAlign: 'center', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <p style={{ fontSize: '0.35rem', color: 'rgba(255,255,255,0.2)' }}>© 2024 V.S.PROJECT</p>
+    </div>
+  </div>
+)}
               </div>
 
               {/* TOMBOL BACK MOBILE */}
@@ -659,7 +691,7 @@ const handleSelectTerritory = (
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-  paddingLeft: '17.2%',
+  paddingLeft: '16.2%',
   paddingRight: '10%',
   paddingTop: '6.2%',
     paddingBottom: '2%',     // ← tambah padding bawah biar ga nempel
@@ -680,11 +712,11 @@ const handleSelectTerritory = (
         transition: 'all 0.2s',
       }}
   onMouseEnter={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke2.png'
   }}
   onMouseLeave={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke1.png'
   }}
 >
@@ -696,6 +728,7 @@ const handleSelectTerritory = (
           color: '#fff', 
           letterSpacing: '0.15em',
           marginBottom: '8px',
+          marginLeft: '5%',
         }}
       >
         TERRITORY
@@ -704,7 +737,7 @@ const handleSelectTerritory = (
         className="stroke-img"
         src="/stroke1.png" 
         alt=""
-        style={{ width: '100%', height: 'auto', display: 'block', marginTop: '-15px' }}
+        style={{ width: '80%', height: 'auto', display: 'block', marginTop: '-10px' }}
       />
     </div>
 
@@ -718,11 +751,11 @@ const handleSelectTerritory = (
         transition: 'all 0.2s',
       }}
   onMouseEnter={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke2.png'
   }}
   onMouseLeave={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke1.png'
   }}
 >
@@ -734,6 +767,7 @@ const handleSelectTerritory = (
           color: '#fff', 
           letterSpacing: '0.15em',
           marginBottom: '8px',
+          marginLeft: '5%'
         }}
       >
         STREET RANK
@@ -742,7 +776,7 @@ const handleSelectTerritory = (
         className="stroke-img"
         src="/stroke1.png" 
         alt=""
-        style={{ width: '100%', height: 'auto', display: 'block', marginTop: '-15px' }}
+        style={{ width: '80%', height: 'auto', display: 'block', marginTop: '-10px' }}
       />
     </div>
 
@@ -756,11 +790,11 @@ const handleSelectTerritory = (
         transition: 'all 0.2s',
       }}
   onMouseEnter={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke2.png'
   }}
   onMouseLeave={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke1.png'
   }}
 >
@@ -772,6 +806,7 @@ const handleSelectTerritory = (
           color: '#fff', 
           letterSpacing: '0.15em',
           marginBottom: '8px',
+          marginLeft: '5%'
         }}
       >
         RANK BY CAR
@@ -780,7 +815,7 @@ const handleSelectTerritory = (
         className="stroke-img"
         src="/stroke1.png" 
         alt=""
-        style={{ width: '100%', height: 'auto', display: 'block', marginTop: '-15px' }}
+        style={{ width: '80%', height: 'auto', display: 'block', marginTop: '-10px' }}
       />
     </div>
 
@@ -794,11 +829,11 @@ const handleSelectTerritory = (
         transition: 'all 0.2s',
       }}
   onMouseEnter={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke2.png'
   }}
   onMouseLeave={e => {
-    const img = e.currentTarget.querySelector('.stroke-img-mobile') as HTMLImageElement
+    const img = e.currentTarget.querySelector('.stroke-img') as HTMLImageElement
     if (img) img.src = '/stroke1.png'
   }}
 >
@@ -810,6 +845,7 @@ const handleSelectTerritory = (
           color: '#fff', 
           letterSpacing: '0.15em',
           marginBottom: '8px',
+          marginLeft: '5%'
         }}
       >
         CREDIT
@@ -818,7 +854,7 @@ const handleSelectTerritory = (
         className="stroke-img"
         src="/stroke1.png" 
         alt=""
-        style={{ width: '100%', height: 'auto', display: 'block', marginTop: '-15px' }}
+        style={{ width: '80%', height: 'auto', display: 'block', marginTop: '-10px' }}
       />
     </div>
   </div>
@@ -1023,37 +1059,76 @@ const handleSelectTerritory = (
       )}
 
       {/* Konten CREDIT */}
-      {activeTab === 'CREDIT' && (
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ marginBottom: '30px' }}>
-            <img src="/logo3.png" alt="PROJECT.D" style={{ maxWidth: '120px', margin: '0 auto', opacity: 0.8 }} />
-            <p style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.65rem', color: '#ff3311', marginTop: '10px', letterSpacing: '0.2em' }}>V.S. PROJECT</p>
-          </div>
-          
-          <div style={{ marginBottom: '20px' }}>
-            <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', lineHeight: 1.8 }}>
-              GTA San Andreas Territory Control System
-            </p>
-            <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.25)', marginTop: '8px' }}>
-              Version 1.0
-            </p>
-          </div>
+{/* Konten CREDIT DESKTOP */}
+{activeTab === 'CREDIT' && (
+  <div style={{ textAlign: 'left', paddingRight: '10px',marginTop: '-8%' }}>
+    <div style={{ marginBottom: '25px', textAlign: 'center' }}>
+      <img src="/logo3.png" alt="V.S.PROJECT" style={{ maxWidth: '100px', margin: '0 auto', opacity: 0.9 }} />
+      <p style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem', color: '#ff3311', marginTop: '8px', letterSpacing: '0.2em' }}>V.S. PROJECT</p>
+    </div>
+    
+    {/* Developer Info */}
+    <div style={{ marginBottom: '20px' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '5px', marginBottom: '12px' }}>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>DEVELOPER</span>
+      </div>
+      <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', color: '#fff', marginBottom: '4px' }}>Project Director & Lead Developer</p>
+      <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)' }}>Eka Nanda Susila</p>
+    </div>
 
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '20px' }}>
-            <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginBottom: '15px' }}>SOCIALS</p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-              <a href="#" style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '0.6rem' }}>Instagram</a>
-              <a href="#" style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '0.6rem' }}>Twitter</a>
-              <a href="#" style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '0.6rem' }}>Discord</a>
-              <a href="#" style={{ fontFamily: "'Share Tech Mono', monospace", color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontSize: '0.6rem' }}>GitHub</a>
-            </div>
-          </div>
+    {/* Tech Stack */}
+    <div style={{ marginBottom: '20px' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '5px', marginBottom: '12px' }}>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>TECH STACK</span>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        {['Next.js', 'TypeScript', 'Supabase', 'Tailwind CSS'].map(tech => (
+          <span key={tech} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '2px' }}>
+            {tech}
+          </span>
+        ))}
+      </div>
+    </div>
 
-          <div style={{ marginTop: '20px', fontSize: '0.5rem', color: 'rgba(255,255,255,0.15)' }}>
-            © 2024 V.S.Project · All Rights Reserved
-          </div>
-        </div>
-      )}
+    {/* Assets */}
+    <div style={{ marginBottom: '20px' }}>
+      <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '5px', marginBottom: '12px' }}>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>ASSETS</span>
+      </div>
+      <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)', marginBottom: '2px' }}>GTA San Andreas Map & Assets</p>
+      <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)' }}>Font: Orbitron, Share Tech Mono</p>
+    </div>
+
+{/* Social Media dengan React Icons */}
+<div style={{ marginBottom: '20px' }}>
+  <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '5px', marginBottom: '12px' }}>
+    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>SOCIALS</span>
+  </div>
+  <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+    <a href="https://www.instagram.com/eka_nanda27/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.6)', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#E4405F'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
+      <FaInstagram size={28} />
+    </a>
+    <a href="https://wa.me/6282228281263" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.6)', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#1DA1F2'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
+      <FaWhatsapp size={28} />
+    </a>
+    <a href="https://github.com/Lvyss" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.6)', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
+      <FaGithub size={28} />
+    </a>
+
+  </div>
+</div>
+
+    {/* Copyright */}
+    <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+      <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', color: 'rgba(255,255,255,0.2)' }}>
+        © 2024 V.S.PROJECT · All Rights Reserved
+      </p>
+      <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', color: 'rgba(255,255,255,0.15)', marginTop: '4px' }}>
+        Built with Next.js & Supabase
+      </p>
+    </div>
+  </div>
+)}
     </div>
 
     {/* TOMBOL BACK DI BAWAH (FOOTER) */}
