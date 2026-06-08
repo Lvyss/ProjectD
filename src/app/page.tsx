@@ -441,7 +441,7 @@ const handleSelectTerritory = (
                 {activeTab === 'TERRITORY' && (
                   <div>
                     <div style={{ marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px' }}>
-                      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>TERRITORY</span>
+                      <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>TERRITORY</span>
                     </div>
                     {territories.map((territory, idx) => {
                       // MERGE WINNER PER TERRITORY
@@ -511,27 +511,28 @@ const handleSelectTerritory = (
                 {/* Konten STREET RANK MOBILE */}
                 {activeTab === 'STREET RANK' && (
                   <div>
-                    <div style={{ marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px' }}>
-                      <span style={{ fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>STREET RANK</span>
-                    </div>
-                    {streetRankData.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: '20px 0', color: 'rgba(255,255,255,0.3)', fontSize: '0.5rem' }}>Loading...</div>
-                    ) : (
-                      streetRankData.slice(0, 8).map((driver, idx) => (
-                        <div key={driver.driver_name} style={{ padding: '8px 0px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
-                              <span style={{ fontSize: '0.55rem', fontWeight: 'bold', color: idx < 3 ? '#FFD700' : 'rgba(255,255,255,0.5)' }}>#{idx + 1}</span>
-                              <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.6rem', fontWeight: 600, color: '#fff' }}>{driver.driver_name.substring(0, 12)}</span>
-                            </div>
-                            <span style={{ fontSize: '0.55rem', fontWeight: 'bold', color: '#ff3311' }}>{driver.total_points}pt</span>
-                          </div>
-                          <div style={{ paddingLeft: '20px', fontSize: '0.45rem', color: 'rgba(255,255,255,0.4)' }}>
-                            🏆 {driver.wins} wins
-                          </div>
-                        </div>
-                      ))
-                    )}
+{/* Konten STREET RANK MOBILE */}
+<div style={{ marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px' }}>
+  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>STREET RANK</span>
+</div>
+{streetRankData.length === 0 ? (
+  <div style={{ textAlign: 'center', padding: '20px 0', color: 'rgba(255,255,255,0.3)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.5rem' }}>Loading...</div>
+) : (
+  streetRankData.slice(0, 8).map((driver, idx) => (
+    <div key={driver.driver_name} style={{ padding: '8px 0px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+          <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', fontWeight: 'bold', color: idx < 3 ? '#FFD700' : 'rgba(255,255,255,0.5)' }}>#{idx + 1}</span>
+          <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.6rem', fontWeight: 600, color: '#fff' }}>{driver.driver_name.substring(0, 12)}</span>
+        </div>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', fontWeight: 'bold', color: '#ff3311' }}>{driver.total_points}pt</span>
+      </div>
+      <div style={{ paddingLeft: '20px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', color: 'rgba(255,255,255,0.4)' }}>
+        🏆 {driver.wins} wins
+      </div>
+    </div>
+  ))
+)}
                   </div>
                 )}
 
@@ -539,7 +540,7 @@ const handleSelectTerritory = (
                 {activeTab === 'RANK BY CAR' && (
                   <div>
                     <div style={{ marginBottom: '12px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '6px' }}>
-                      <span style={{ fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>RANK BY CAR</span>
+                      <span style={{ fontFamily: "'Orbitron', sans-serif",fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>RANK BY CAR</span>
                     </div>
                     {rankByCarData.length === 0 ? (
                       <div style={{ textAlign: 'center', padding: '20px 0', color: 'rgba(255,255,255,0.3)', fontSize: '0.5rem' }}>Loading...</div>
@@ -572,14 +573,14 @@ const handleSelectTerritory = (
     
     <div style={{ marginBottom: '12px' }}>
       <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '3px', marginBottom: '8px' }}>
-        <span style={{ fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>DEVELOPER</span>
+        <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>DEVELOPER</span>
       </div>
       <p style={{ fontSize: '0.55rem', color: '#fff' }}>Eka Nanda Susila</p>
     </div>
 
     <div style={{ marginBottom: '12px' }}>
       <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '3px', marginBottom: '8px' }}>
-        <span style={{ fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>TECH</span>
+        <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>TECH</span>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
         {['Next.js', 'Supabase', 'TS', 'Tailwind'].map(tech => (
@@ -590,7 +591,7 @@ const handleSelectTerritory = (
 
 <div style={{ marginBottom: '12px' }}>
   <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '3px', marginBottom: '8px' }}>
-    <span style={{ fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>SOCIALS</span>
+    <span style={{fontFamily: "'Orbitron', sans-serif", fontSize: '0.5rem', color: '#ff3311', letterSpacing: '0.12em' }}>SOCIALS</span>
   </div>
   <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
     <a href="https://www.instagram.com/eka_nanda27/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.5)', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#E4405F'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.5)'}>
@@ -991,95 +992,94 @@ const handleSelectTerritory = (
 )}
 
       {/* Konten STREET RANK */}
-      {activeTab === 'STREET RANK' && (
-        <div>
-          <div style={{ marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', color: '#ff3311', letterSpacing: '0.2em' }}>STREET RANK</span>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginLeft: '10px' }}>ALL DRIVERS</span>
+{/* Konten STREET RANK */}
+{activeTab === 'STREET RANK' && (
+  <div>
+    <div style={{ marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
+      <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem', color: '#ff3311', letterSpacing: '0.2em' }}>STREET RANK</span>
+      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginLeft: '10px' }}>ALL DRIVERS</span>
+    </div>
+    {streetRankData.length === 0 ? (
+      <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem' }}>Loading...</div>
+    ) : (
+      streetRankData.map((driver, idx) => (
+        <div key={driver.driver_name} style={{ padding: '10px 0px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'baseline' }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', fontWeight: 'bold', color: idx < 3 ? '#FFD700' : 'rgba(255,255,255,0.5)' }}>
+                #{idx + 1}
+              </span>
+              <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.75rem', fontWeight: 600, color: '#fff' }}>
+                {driver.driver_name.toUpperCase()}
+              </span>
+            </div>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', fontWeight: 'bold', color: '#ff3311' }}>
+              {driver.total_points}pt
+            </span>
           </div>
-          {streetRankData.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)' }}>Loading...</div>
-          ) : (
-            streetRankData.map((driver, idx) => (
-              <div key={driver.driver_name} style={{ padding: '10px 0px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'baseline' }}>
-                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', fontWeight: 'bold', color: idx < 3 ? '#FFD700' : 'rgba(255,255,255,0.5)' }}>
-                      #{idx + 1}
-                    </span>
-                    <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.75rem', fontWeight: 600, color: '#fff' }}>
-                      {driver.driver_name.toUpperCase()}
-                    </span>
-                  </div>
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', fontWeight: 'bold', color: '#ff3311' }}>
-                    {driver.total_points}pt
-                  </span>
-                </div>
-                <div style={{ paddingLeft: '32px', fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
-                  🏆 {driver.wins} wins · Best car: {driver.best_car}
-                </div>
-              </div>
-            ))
-          )}
+          <div style={{ paddingLeft: '32px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+            🏆 {driver.wins} wins · Best car: {driver.best_car}
+          </div>
         </div>
-      )}
+      ))
+    )}
+  </div>
+)}
 
-      {/* Konten RANK BY CAR */}
-      {activeTab === 'RANK BY CAR' && (
-        <div>
-          <div style={{ marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', color: '#ff3311', letterSpacing: '0.2em' }}>RANK BY CAR</span>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginLeft: '10px' }}>PER CAR</span>
+{/* Konten RANK BY CAR */}
+{activeTab === 'RANK BY CAR' && (
+  <div>
+    <div style={{ marginBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
+      <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem', color: '#ff3311', letterSpacing: '0.2em' }}>RANK BY CAR</span>
+      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.3)', marginLeft: '10px' }}>PER CAR</span>
+    </div>
+    {rankByCarData.length === 0 ? (
+      <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem' }}>Loading...</div>
+    ) : (
+      rankByCarData.map((car, idx) => (
+        <div key={car.car_name} style={{ padding: '10px 0px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'baseline' }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', fontWeight: 'bold', color: idx < 3 ? '#FFD700' : 'rgba(255,255,255,0.5)' }}>
+                #{idx + 1}
+              </span>
+              <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem', fontWeight: 600, color: '#fff' }}>
+                {car.car_name.toUpperCase()}
+              </span>
+            </div>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', fontWeight: 'bold', color: '#ff3311' }}>
+              {car.points}pt
+            </span>
           </div>
-          {rankByCarData.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)' }}>Loading...</div>
-          ) : (
-            rankByCarData.map((car, idx) => (
-              <div key={car.car_name} style={{ padding: '10px 0px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'baseline' }}>
-                    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', fontWeight: 'bold', color: idx < 3 ? '#FFD700' : 'rgba(255,255,255,0.5)' }}>
-                      #{idx + 1}
-                    </span>
-                    <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem', fontWeight: 600, color: '#fff' }}>
-                      {car.car_name.toUpperCase()}
-                    </span>
-                  </div>
-                  <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.7rem', fontWeight: 'bold', color: '#ff3311' }}>
-                    {car.points}pt
-                  </span>
-                </div>
-                <div style={{ paddingLeft: '32px', fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
-                  🚗 {car.driver_name} · {car.territory}
-                </div>
-              </div>
-            ))
-          )}
+          <div style={{ paddingLeft: '32px', fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)' }}>
+            🚗 {car.driver_name} · {car.territory}
+          </div>
         </div>
-      )}
+      ))
+    )}
+  </div>
+)}
 
       {/* Konten CREDIT */}
 {/* Konten CREDIT DESKTOP */}
 {activeTab === 'CREDIT' && (
   <div style={{ textAlign: 'left', paddingRight: '10px',marginTop: '-8%' }}>
-    <div style={{ marginBottom: '25px', textAlign: 'center' }}>
+    <div style={{ marginBottom: '', textAlign: 'center' }}>
       <img src="/logo3.png" alt="V.S.PROJECT" style={{ maxWidth: '100px', margin: '0 auto', opacity: 0.9 }} />
-      <p style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.7rem', color: '#ff3311', marginTop: '8px', letterSpacing: '0.2em' }}>V.S. PROJECT</p>
+  
     </div>
     
     {/* Developer Info */}
-    <div style={{ marginBottom: '20px' }}>
-      <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '5px', marginBottom: '12px' }}>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>DEVELOPER</span>
-      </div>
-      <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', color: '#fff', marginBottom: '4px' }}>Project Director & Lead Developer</p>
-      <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)' }}>Eka Nanda Susila</p>
-    </div>
+
+<span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>DEVELOPER</span>
+<p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.65rem', color: '#fff', marginBottom: '4px' }}>Project Director & Lead Developer</p>
+<p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)' }}>Eka Nanda Susila</p>
+
 
     {/* Tech Stack */}
-    <div style={{ marginBottom: '20px' }}>
+    <div style={{ marginTop: '20px',marginBottom: '20px' }}>
       <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '5px', marginBottom: '12px' }}>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>TECH STACK</span>
+        <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>TECH STACK</span>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
         {['Next.js', 'TypeScript', 'Supabase', 'Tailwind CSS'].map(tech => (
@@ -1093,7 +1093,7 @@ const handleSelectTerritory = (
     {/* Assets */}
     <div style={{ marginBottom: '20px' }}>
       <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '5px', marginBottom: '12px' }}>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>ASSETS</span>
+        <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>ASSETS</span>
       </div>
       <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)', marginBottom: '2px' }}>GTA San Andreas Map & Assets</p>
       <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.55rem', color: 'rgba(255,255,255,0.5)' }}>Font: Orbitron, Share Tech Mono</p>
@@ -1102,7 +1102,7 @@ const handleSelectTerritory = (
 {/* Social Media dengan React Icons */}
 <div style={{ marginBottom: '20px' }}>
   <div style={{ borderBottom: '1px solid rgba(255,51,17,0.3)', paddingBottom: '5px', marginBottom: '12px' }}>
-    <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>SOCIALS</span>
+    <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: '0.6rem', color: '#ff3311', letterSpacing: '0.15em' }}>SOCIALS</span>
   </div>
   <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
     <a href="https://www.instagram.com/eka_nanda27/" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.6)', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#E4405F'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>
