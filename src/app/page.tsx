@@ -606,7 +606,7 @@ const handleSelectTerritory = (
 </div>
 
     <div style={{ textAlign: 'center', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-      <p style={{ fontSize: '0.35rem', color: 'rgba(255,255,255,0.2)' }}>© 2024 V.S.PROJECT</p>
+      <p style={{ fontSize: '0.35rem', color: 'rgba(255,255,255,0.2)' }}>© 2026 Eka Nanda Susila. All Rights Reserved.</p>
     </div>
   </div>
 )}
@@ -1121,7 +1121,7 @@ const handleSelectTerritory = (
     {/* Copyright */}
     <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
       <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.45rem', color: 'rgba(255,255,255,0.2)' }}>
-        © 2024 V.S.PROJECT · All Rights Reserved
+        © 2026 Eka Nanda Susila. All Rights Reserved.
       </p>
       <p style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: '0.4rem', color: 'rgba(255,255,255,0.15)', marginTop: '4px' }}>
         Built with Next.js & Supabase
